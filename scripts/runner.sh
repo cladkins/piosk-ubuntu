@@ -40,6 +40,19 @@ if [ "$DISPLAY_READY" = false ]; then
     export DISPLAY=:0
 fi
 
+# Fix X11 authorization issues
+echo "=== Fixing X11 Authorization ==="
+if [ ! -f "$XAUTHORITY" ]; then
+    echo "Xauthority file not found, creating it..."
+    touch "$XAUTHORITY"
+    chmod 600 "$XAUTHORITY"
+    xauth generate :0 . trusted
+fi
+
+# Allow local connections to X server
+echo "Allowing local connections to X server..."
+xhost +local: >/dev/null 2>&1 || echo "xhost command failed, continuing anyway..."
+
 # Check if chromium-browser is available
 if ! command -v /usr/bin/chromium-browser >/dev/null 2>&1; then
     echo "chromium-browser not found at /usr/bin/chromium-browser"

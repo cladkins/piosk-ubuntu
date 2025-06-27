@@ -2,6 +2,7 @@
 Description=Launch PiOSK runner to start Chromium on Ubuntu
 After=network.target graphical-session.target
 Wants=graphical-session.target
+Requires=graphical-session.target
 
 [Service]
 Type=simple
