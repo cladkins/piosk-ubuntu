@@ -5,8 +5,10 @@ After=network.target
 [Service]
 Type=simple
 ExecStart=npm start --prefix /opt/piosk/
-User=root
+User=USER_PLACEHOLDER
+WorkingDirectory=/opt/piosk
 Restart=on-failure
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
