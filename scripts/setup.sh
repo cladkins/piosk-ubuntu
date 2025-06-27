@@ -16,6 +16,54 @@ ACTUAL_USER=${SUDO_USER:-$USER}
 
 echo "Setting up PiOSK for user: $ACTUAL_USER"
 
+# Detect display manager
+echo "Detecting display manager..."
+if systemctl is-active --quiet gdm3; then
+    DISPLAY_MANAGER="gdm3"
+elif systemctl is-active --quiet lightdm; then
+    DISPLAY_MANAGER="lightdm"
+elif systemctl is-active --quiet sddm; then
+    DISPLAY_MANAGER="sddm"
+else
+    DISPLAY_MANAGER="unknown"
+fi
+echo "Display manager: $DISPLAY_MANAGER"
+
+# Configure autologin
+echo "Configuring autologin..."
+case $DISPLAY_MANAGER in
+    "gdm3")
+        echo "Configuring GDM3 autologin..."
+        mkdir -p /etc/gdm3
+        cat > /etc/gdm3/custom.conf << EOF
+[daemon]
+AutomaticLoginEnable=true
+AutomaticLogin=$ACTUAL_USER
+EOF
+        ;;
+    "lightdm")
+        echo "Configuring LightDM autologin..."
+        mkdir -p /etc/lightdm
+        cat > /etc/lightdm/lightdm.conf << EOF
+[SeatDefaults]
+autologin-user=$ACTUAL_USER
+autologin-user-timeout=0
+EOF
+        ;;
+    "sddm")
+        echo "Configuring SDDM autologin..."
+        mkdir -p /etc/sddm.conf.d
+        cat > /etc/sddm.conf.d/autologin.conf << EOF
+[Autologin]
+User=$ACTUAL_USER
+Session=ubuntu.desktop
+EOF
+        ;;
+    *)
+        echo "Unknown display manager. Please configure autologin manually."
+        ;;
+esac
+
 # Create installation directory
 echo "Creating installation directory..."
 mkdir -p /opt/piosk
@@ -92,6 +140,7 @@ systemctl daemon-reload
 
 echo "=== Setup Complete ==="
 echo ""
+echo "Autologin configured for user: $ACTUAL_USER"
 echo "PiOSK will now start automatically when you log in to the desktop."
 echo ""
 echo "To start PiOSK manually:"
