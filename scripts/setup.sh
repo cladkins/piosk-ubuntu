@@ -109,7 +109,28 @@ fi
 # Install npm dependencies
 echo "Installing npm dependencies..."
 cd /opt/piosk
-sudo -u $ACTUAL_USER npm install
+
+# Ensure we have the right ownership for npm install
+chown -R $ACTUAL_USER:$ACTUAL_USER /opt/piosk
+
+# Run npm install as the user
+echo "Running npm install..."
+if ! sudo -u $ACTUAL_USER npm install; then
+    echo "npm install failed, trying alternative approach..."
+    # Alternative: install dependencies globally or with different method
+    npm install --prefix /opt/piosk
+    chown -R $ACTUAL_USER:$ACTUAL_USER /opt/piosk
+fi
+
+# Verify dependencies are installed
+if [ ! -d "/opt/piosk/node_modules" ] || [ ! -d "/opt/piosk/node_modules/express" ]; then
+    echo "Dependencies not found, installing manually..."
+    cd /opt/piosk
+    npm install express@^5.0.0-beta.3
+    chown -R $ACTUAL_USER:$ACTUAL_USER /opt/piosk
+fi
+
+echo "npm dependencies installed successfully"
 
 # Create autostart entry for better X11 authorization
 echo "Creating autostart entry..."
