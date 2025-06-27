@@ -40,8 +40,23 @@ chown -R $ACTUAL_USER:$ACTUAL_USER /opt/piosk
 echo "Setting proper permissions..."
 chmod 755 /opt/piosk
 chmod 755 /opt/piosk/scripts
-chmod 644 /opt/piosk/config.json
-chmod 644 /opt/piosk/web/*
+
+# Handle config.json - create from sample if it doesn't exist
+if [ ! -f /opt/piosk/config.json ]; then
+    if [ -f /opt/piosk/config.json.sample ]; then
+        cp /opt/piosk/config.json.sample /opt/piosk/config.json
+        echo "Created config.json from sample"
+    fi
+fi
+
+# Set permissions for config and web files
+if [ -f /opt/piosk/config.json ]; then
+    chmod 644 /opt/piosk/config.json
+fi
+
+if [ -d /opt/piosk/web ]; then
+    chmod 644 /opt/piosk/web/*
+fi
 
 # Create autostart entry for better X11 authorization
 echo "Creating autostart entry..."
