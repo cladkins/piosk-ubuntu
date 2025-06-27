@@ -1,5 +1,12 @@
 #!/bin/bash
 
+echo "=== PiOSK Runner Debug Info ==="
+echo "Running as user: $(whoami)"
+echo "Current DISPLAY: $DISPLAY"
+echo "Current XAUTHORITY: $XAUTHORITY"
+echo "Current XDG_RUNTIME_DIR: $XDG_RUNTIME_DIR"
+echo ""
+
 # Wait for display to be ready
 sleep 10
 
@@ -42,7 +49,7 @@ fi
 echo "Starting Chromium with URLs: $(jq -r '.urls | map(.url) | join(" ")' /opt/piosk/config.json)"
 
 # Launch Chromium with Ubuntu-optimized parameters
-/usr/bin/chromium-browser \
+exec /usr/bin/chromium-browser \
   $(jq -r '.urls | map(.url) | join(" ")' /opt/piosk/config.json) \
   --disable-component-update \
   --disable-composited-antialiasing \
