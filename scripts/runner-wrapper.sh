@@ -80,4 +80,5 @@ if [ -n "$CURRENT_USER" ] && [ "$CURRENT_USER" != "cladkins" ]; then
     sudo -u $CURRENT_USER -E CHROMIUM_CMD="$CHROMIUM_CMD" exec /opt/piosk/scripts/runner.sh
 else
     # Run as cladkins
-    CHROMIUM_CMD="$CHROMIUM_CMD" exec /opt/piosk/scripts/runner.sh 
+    CHROMIUM_CMD="$CHROMIUM_CMD" exec /opt/piosk/scripts/runner.sh
+fi 
