@@ -1,16 +1,36 @@
 #!/bin/bash
 
 # Wait for display to be ready
-sleep 5
+sleep 10
 
-# Check if display is available
-if ! xset q >/dev/null 2>&1; then
-    echo "Display not available, waiting..."
-    sleep 10
+# Check if display is available - try multiple methods
+DISPLAY_READY=false
+for i in {1..30}; do
+    if xset q >/dev/null 2>&1; then
+        echo "Display is available"
+        DISPLAY_READY=true
+        break
+    elif [ -S /tmp/.X11-unix/X0 ]; then
+        echo "X11 socket found, waiting for display..."
+        sleep 2
+    else
+        echo "Display not available, waiting... (attempt $i/30)"
+        sleep 2
+    fi
+done
+
+if [ "$DISPLAY_READY" = false ]; then
+    echo "Display still not available after 60 seconds, trying anyway..."
+fi
+
+# Check if chromium-browser is available
+if ! command -v /usr/bin/chromium-browser >/dev/null 2>&1; then
+    echo "chromium-browser not found at /usr/bin/chromium-browser"
+    exit 1
 fi
 
 # Launch Chromium with Ubuntu-optimized parameters
-chromium-browser \
+/usr/bin/chromium-browser \
   $(jq -r '.urls | map(.url) | join(" ")' /opt/piosk/config.json) \
   --disable-component-update \
   --disable-composited-antialiasing \
