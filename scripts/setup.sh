@@ -106,6 +106,11 @@ if [ -d /opt/piosk/web ]; then
     chmod 644 /opt/piosk/web/*
 fi
 
+# Install npm dependencies
+echo "Installing npm dependencies..."
+cd /opt/piosk
+sudo -u $ACTUAL_USER npm install
+
 # Create autostart entry for better X11 authorization
 echo "Creating autostart entry..."
 mkdir -p /home/$ACTUAL_USER/.config/autostart
@@ -142,6 +147,9 @@ echo "=== Setup Complete ==="
 echo ""
 echo "Autologin configured for user: $ACTUAL_USER"
 echo "PiOSK will now start automatically when you log in to the desktop."
+echo ""
+echo "Dashboard is available at:"
+echo "  http://$(hostname) or http://$(hostname -I | cut -d ' ' -f1)"
 echo ""
 echo "To start PiOSK manually:"
 echo "  /opt/piosk/scripts/runner.sh"
