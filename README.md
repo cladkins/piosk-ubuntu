@@ -1,129 +1,187 @@
 ![PiOSK Banner](assets/banner.png)
-**One-shot set up Raspberry Pi in kiosk mode as a webpage shuffler, with a web interface for management.**
+**One-shot set up Ubuntu in kiosk mode as a webpage shuffler, with a web interface for management.**
 
-> [!NOTE]  
-> **Ubuntu Users**: If you're using Ubuntu instead of Raspberry Pi OS, check out the [Ubuntu-compatible version](README-UBUNTU.md) with adapted scripts and configuration for Ubuntu systems.
+# PiOSK for Ubuntu
 
-# 0. Foreword
+PiOSK transforms your Ubuntu machine into a kiosk mode display that cycles through web pages automatically. It includes a web-based dashboard for easy management of the displayed URLs.
 
-This started as a simple automation script &mdash; a wrapper of the [official Raspberry Pi kiosk mode tutorial](https://www.raspberrypi.com/tutorials/how-to-use-a-raspberry-pi-in-kiosk-mode/) for personal use. Then one thing lead to the other and I found myself installing nodejs & writing systemd unit files...
+## Features
 
-That's when I realized... maybe there are other people (or future me) who'd also find this "single script setup" useful.
+- **Automatic Setup**: Single script installation
+- **Web Dashboard**: Manage URLs through a web interface
+- **Auto-login**: Configures automatic login for your display manager
+- **Tab Rotation**: Automatically cycles through configured web pages
+- **Systemd Integration**: Runs as system services for reliability
+- **Multiple Display Manager Support**: Works with GDM3, LightDM, and SDDM
 
-> [!NOTE]  
-> And apparently, I wasn't wrong! From GitHub [stars](https://github.com/debloper/piosk/stargazers), [issue](https://github.com/debloper/piosk/issues) reports, to [news articles](https://www.hackster.io/news/fe890d007c32) covering PiOSK - the community acceptance has been far more than I had imagined. So, with the wide range of users, there's a need for stabilizing the repo and consolidating the features. The followup updates will be less frequent, and more thoroughly tested. It's not a feature freeze, but priority would be on the refactor and maintenance.
+## System Requirements
 
+- Ubuntu 18.04 LTS or newer
+- Desktop environment (GNOME, KDE, XFCE, etc.)
+- Internet connection for initial setup
+- At least 2GB RAM recommended
 
-# 1. Set Up Guide
+## Quick Installation
 
-[![PiOSK Setup Video Walkthrough](https://img.youtube.com/vi/CrQjc6P-g1A/maxresdefault.jpg)](https://youtu.be/CrQjc6P-g1A)
-
-***PiOSK Setup Video Walkthrough***
-
-> [!IMPORTANT]  
-> PiOSK ***[assumes](#21-assumptions)*** a few things to keep itself lean and just focuses on the essentials. It should still work even if some of those assumptions aren't met, but it may require some tinkering & manual overrides. Issue reports or fixes for those edge cases are appreciated & welcome!
-
-
-## 1.1 Preparation
-
-0. Boot into Raspberry Pi desktop[^1]
-1. Ensure username, hostname etc. are configured
-2. Check ethernet/WiFi works & has internet access
-3. Enable [desktop auto login](https://www.raspberrypi.com/documentation/computers/configuration.html#boot-options) (set by default on RPi OS)
-
-[^1]: That is to say... boot into `runlevel 5` or `graphical.target` and not in console mode &mdash; it's **NOT** a recommendation to use the 3.4GB boot image named [Raspberry Pi OS Desktop](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-desktop)
-
-> [!NOTE]  
-> Check [recommendations section](#22-recommendations) for more detailed explanations.
-
-
-## 1.2 Installation
-
-Either open terminal on the Raspberry Pi's desktop environment, or remote login to it; and run the following command:
+Run the following command in your terminal:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/debloper/piosk/main/scripts/setup.sh | sudo bash -
+curl -sSL https://raw.githubusercontent.com/cladkins/piosk-ubuntu/main/scripts/setup.sh | sudo bash -
 ```
 
-That's it[^2].
+Or download and run the installer:
 
-[^2]: For some reason, if that's **NOT** it, and you hit a snag... please report an issue & give us some context to replicate & debug it.
+```bash
+wget https://raw.githubusercontent.com/cladkins/piosk-ubuntu/main/install.sh
+chmod +x install.sh
+./install.sh
+```
 
-## 1.3 Configuration
+## Manual Installation
 
-### 1.3.1 Basic
+1. Clone the repository:
+```bash
+git clone https://github.com/cladkins/piosk-ubuntu.git
+cd piosk-ubuntu
+```
 
-1. Visit `http://<pi's IP address>/`[^3] from a different device on the network
-2. You should see the PiOSK dashboard with a list of sample URLs as kiosk mode screens
-3. Feel free to add & remove links as necessary (at least 1 link is necessary for it to work)
-4. The URLs don't have to be of remote domains. You can use localhost or even `file:///path`
-5. Once you're happy with the list, press `APPLY ⏻` button to apply changes and reboot PiOSK
-6. When rebooted, wait for the kiosk mode to start & flip through the pages in fullscreen mode
+2. Run the setup script:
+```bash
+sudo ./scripts/setup.sh
+```
 
+## Configuration
 
-### 1.3.2 Advanced
+### Basic Setup
 
-> [!WARNING]  
-> Try these at your own risk; if you know what you're doing. Misconfiguration(s) may break the setup.
+1. After installation, visit `http://<your-ubuntu-ip>/` from any device on your network
+2. You'll see the PiOSK dashboard with sample URLs
+3. Add, remove, or modify the URLs as needed (at least 1 URL is required)
+4. Click the `APPLY ⏻` button to apply changes and reboot
+5. After reboot, the kiosk mode will start automatically
 
-1. The PiOSK repo is cloned to `/opt/piosk`
-2. You can change the dashboard port from `index.js`
-3. You can change the per-page timeout from `scripts/switcher.sh`
-4. You can change browser behavior (e.g. no full screen) from `scripts/runner.sh`
-5. Some changes can be applied without rebooting, but rebooting is simpler
+### Advanced Configuration
 
-[^3]: PiOSK uses port 80 on the Pi to serve the web dashboard. If you're planning to use the Pi for other purposes, make sure to avoid port collision.
+The configuration file is located at `/opt/piosk/config.json`. You can edit it directly or use the web interface.
 
-![PiOSK Dashboard Web GUI](assets/dashboard.png)
+Example configuration:
+```json
+{
+    "urls": [
+        {
+            "url": "https://example.com"
+        },
+        {
+            "url": "https://another-site.com"
+        }
+    ]
+}
+```
 
-## 1.4 Updating
+## Display Manager Support
 
-For now, there's no direct way to update the setup. This will change.
+The setup script automatically detects and configures your display manager:
 
-You should uninstall old version and then reinstall the new version. As long as you don't delete the backup config file (created during uninstallation), it should be picked up and reinstated by the reinstallation process.
+- **GDM3** (GNOME): Most common on Ubuntu
+- **LightDM**: Used by XFCE and some other desktop environments
+- **SDDM**: Used by KDE Plasma
 
-Look into the Uninstallation section for the next steps.
+## Troubleshooting
 
+### Common Issues
 
-## 1.5 Uninstallation
+1. **Display not working**: Ensure you're logged into a desktop session
+2. **Web dashboard not accessible**: Check if port 80 is available
+3. **Chromium not starting**: Verify display permissions and X11 setup
+4. **Auto-login not working**: Check your display manager configuration
 
-In order to uninstall/remove PiOSK from your system, run the `cleanup.sh` script:
+### Manual Display Manager Configuration
+
+If auto-login doesn't work automatically, you can configure it manually:
+
+#### GDM3
+```bash
+sudo nano /etc/gdm3/custom.conf
+```
+Add:
+```ini
+[daemon]
+AutomaticLoginEnable=true
+AutomaticLogin=yourusername
+```
+
+#### LightDM
+```bash
+sudo nano /etc/lightdm/lightdm.conf
+```
+Add:
+```ini
+[SeatDefaults]
+autologin-user=yourusername
+autologin-user-timeout=0
+```
+
+#### SDDM
+```bash
+sudo nano /etc/sddm.conf.d/autologin.conf
+```
+Add:
+```ini
+[Autologin]
+User=yourusername
+Session=ubuntu.desktop
+```
+
+### Service Management
+
+Check service status:
+```bash
+sudo systemctl status piosk-dashboard
+sudo systemctl status piosk-runner
+sudo systemctl status piosk-switcher
+```
+
+Restart services:
+```bash
+sudo systemctl restart piosk-dashboard
+sudo systemctl restart piosk-runner
+sudo systemctl restart piosk-switcher
+```
+
+## Uninstallation
+
+To remove PiOSK from your Ubuntu system:
 
 ```bash
 sudo /opt/piosk/scripts/cleanup.sh
 ```
 
-> [!NOTE]  
-> By default PiOSK doesn't uninstall the system packages it installs as dependencies (i.e. `git`, `jq`, `Node.js`, `wtype`). The reason being, if they're force removed, then other packages (which have been installed since) that may also rely on them - will break.
+Or if you've installed manually:
+```bash
+sudo ./scripts/cleanup.sh
+```
 
-# 2. Appendix
+## Security Considerations
 
-## 2.1 Assumptions
+- The web dashboard runs on port 80 by default
+- Consider changing the port if you have other web services
+- The kiosk mode runs with reduced privileges
+- Consider disabling unnecessary network services for production use
 
-0. You're using a Raspberry Pi (other SBCs may work, not tested)
-1. You're using "[Raspberry Pi OS with desktop (32bit)](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-32-bit)" (other distros may work, not tested)
-2. You've applied proper [OS customizations](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options) & the Pi is able to access the internet (required for setup)
-3. You're not using port 80 on the Pi to run some other web server (apart from PiOSK dashboard)
+## Contributing
 
-## 2.2 Recommendations
+This is an Ubuntu adaptation of the original [PiOSK project](https://github.com/debloper/piosk). For the main project, visit: https://github.com/debloper/piosk
 
-- Choose the right device and OS
-  - If your Pi has 4GB or less memory, choose 32bit image
-  - Raspberry Pi Zeros struggle running Chromium due to low memory
-  - Raspberry Pi4 or Pi5 (or their compute modules) are ideal for PiOSK
-  - Apply the necessary customizations (user account, WiFi credentials, SSH access etc)
-- Choose the right display/screen
-  - Not related to PiOSK, but resolution matters for browser based kiosk mode
-    - Browser content window resolutions smaller than `1024px*600px` may not be ideal
-    - Different websites have different responsive rules & handle small screens differently
-  - Also be mindful of [LCD burn-in](https://en.wikipedia.org/wiki/Screen_burn-in) if displaying very limited number of static pages
-  - DSI displays are more discreet, but they may require driver setup to work properly
-- Take necessary steps to harden security
-    - Disable touchscreen unless required
-    - Disable ports that aren't required
-    - Disable unused network interfaces, remote SSH
-    - Enable OverlayFS to write protect storage
-- Discover the Pi on the network
-    - Set hostname (e.g. `piosk`) so you can call it by hostname without needing to hunt for IP
-    - The dashboard's URL with the hostname & IP address is shown at the end of the install script
-    - Or, run angry IP scanner or login to router/switch to discover the Pi's IP the hard way
+## License
+
+MPL-2.0
+
+## Support
+
+For issues, please check:
+1. Your Ubuntu version and desktop environment
+2. Display manager configuration
+3. Network connectivity
+4. Service logs: `sudo journalctl -u piosk-*`
+
+![PiOSK Dashboard Web GUI](assets/dashboard.png)

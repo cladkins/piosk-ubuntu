@@ -1,4 +1,15 @@
 #!/bin/bash
+
+# Wait for display to be ready
+sleep 5
+
+# Check if display is available
+if ! xset q >/dev/null 2>&1; then
+    echo "Display not available, waiting..."
+    sleep 10
+fi
+
+# Launch Chromium with Ubuntu-optimized parameters
 chromium-browser \
   $(jq -r '.urls | map(.url) | join(" ")' /opt/piosk/config.json) \
   --disable-component-update \
@@ -17,4 +28,9 @@ chromium-browser \
   --ignore-gpu-blocklist \
   --kiosk \
   --no-first-run \
-  --noerrdialogs
+  --noerrdialogs \
+  --disable-web-security \
+  --disable-features=VizDisplayCompositor \
+  --disable-dev-shm-usage \
+  --no-sandbox \
+  --disable-setuid-sandbox 

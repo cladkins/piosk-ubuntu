@@ -1,27 +1,30 @@
 {
-  "name": "piosk",
+  "name": "piosk-ubuntu",
   "version": "0.1.0",
-  "description": "One-shot set up Raspberry Pi in kiosk mode as a webpage shuffler, with a web interface for management.",
+  "description": "One-shot set up Ubuntu in kiosk mode as a webpage shuffler, with a web interface for management.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/debloper/piosk.git"
+    "url": "git+ssh://git@github.com/cladkins/piosk-ubuntu.git"
   },
   "keywords": [
     "piosk",
     "kiosk mode",
-    "raspberry pi",
-    "wayfire autostart"
+    "ubuntu",
+    "display manager",
+    "gdm3",
+    "lightdm",
+    "sddm"
   ],
   "author": "Soumya Deb <debloper@gmail.com>",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/debloper/piosk/issues"
+    "url": "https://github.com/cladkins/piosk-ubuntu/issues"
   },
-  "homepage": "https://github.com/debloper/piosk#readme",
+  "homepage": "https://github.com/cladkins/piosk-ubuntu#readme",
   "dependencies": {
     "express": "^5.0.0-beta.3"
   }

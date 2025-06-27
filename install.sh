@@ -14,7 +14,7 @@ echo "Press Enter to continue or Ctrl+C to cancel..."
 read
 
 # Download and run the setup script
-curl -sSL https://raw.githubusercontent.com/debloper/piosk/main/scripts/setup-ubuntu.sh | sudo bash -
+curl -sSL https://raw.githubusercontent.com/cladkins/piosk-ubuntu/main/scripts/setup.sh | sudo bash -
 
 echo ""
 echo "Installation complete!"

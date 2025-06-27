@@ -20,30 +20,83 @@ if [ "$EUID" -ne 0 ]; then
   exit $?  # Exit with the status of the sudo command
 fi
 
-echo -e "${INFO}Configuring autologin...${RESET}"
-if grep -q "autologin" "/etc/systemd/system/getty@tty1.service.d/autologin.conf" 2>/dev/null; then
-  echo -e "${SUCCESS}\tautologin is already enabled!${RESET}."
+echo -e "${INFO}Detecting Ubuntu version and display manager...${RESET}"
+# Detect Ubuntu version
+UBUNTU_VERSION=$(lsb_release -rs)
+echo -e "${DEBUG}Ubuntu version: $UBUNTU_VERSION${RESET}"
+
+# Detect display manager
+if systemctl is-active --quiet gdm3; then
+    DISPLAY_MANAGER="gdm3"
+elif systemctl is-active --quiet lightdm; then
+    DISPLAY_MANAGER="lightdm"
+elif systemctl is-active --quiet sddm; then
+    DISPLAY_MANAGER="sddm"
 else
-  if command -v raspi-config >/dev/null 2>&1; then
-    echo -e "${DEBUG}Enabling autologin using raspi-config...${RESET}"
-    raspi-config nonint do_boot_behaviour B4
-  else
-    echo -e "${ERROR}Could not enable autologin${RESET}"
-    echo -e "${ERROR}Please configure autologin manually and rerun setup.${RESET}"
-  fi
-  echo -e "${SUCCESS}\tautologin has been enabled!${RESET}"
+    DISPLAY_MANAGER="unknown"
 fi
+echo -e "${DEBUG}Display manager: $DISPLAY_MANAGER${RESET}"
+
+echo -e "${INFO}Configuring autologin for Ubuntu...${RESET}"
+# Configure auto-login based on display manager
+case $DISPLAY_MANAGER in
+    "gdm3")
+        echo -e "${DEBUG}Configuring GDM3 autologin...${RESET}"
+        # Create GDM3 autologin configuration
+        mkdir -p /etc/gdm3
+        cat > /etc/gdm3/custom.conf << EOF
+[daemon]
+AutomaticLoginEnable=true
+AutomaticLogin=$SUDO_USER
+EOF
+        ;;
+    "lightdm")
+        echo -e "${DEBUG}Configuring LightDM autologin...${RESET}"
+        # Configure LightDM autologin
+        mkdir -p /etc/lightdm
+        cat > /etc/lightdm/lightdm.conf << EOF
+[SeatDefaults]
+autologin-user=$SUDO_USER
+autologin-user-timeout=0
+EOF
+        ;;
+    "sddm")
+        echo -e "${DEBUG}Configuring SDDM autologin...${RESET}"
+        # Configure SDDM autologin
+        mkdir -p /etc/sddm.conf.d
+        cat > /etc/sddm.conf.d/autologin.conf << EOF
+[Autologin]
+User=$SUDO_USER
+Session=ubuntu.desktop
+EOF
+        ;;
+    *)
+        echo -e "${WARNING}Unknown display manager. Please configure autologin manually.${RESET}"
+        ;;
+esac
 
 echo -e "${INFO}Installing dependencies...${RESET}"
-apt install -y git jq wtype nodejs npm
+# Update package list
+apt update
+
+# Install dependencies
+apt install -y git jq nodejs npm chromium-browser
+
+# Install wtype for keyboard simulation (Ubuntu package)
+if ! command -v wtype >/dev/null 2>&1; then
+    echo -e "${DEBUG}Installing wtype from source...${RESET}"
+    apt install -y build-essential libxkbcommon-dev libwayland-dev libinput-dev
+    git clone https://github.com/atx/wtype.git /tmp/wtype
+    cd /tmp/wtype
+    make
+    make install
+    cd -
+    rm -rf /tmp/wtype
+fi
 
 echo -e "${INFO}Cloning repository...${RESET}"
-git clone https://github.com/debloper/piosk.git "$PIOSK_DIR"
+git clone https://github.com/cladkins/piosk-ubuntu.git "$PIOSK_DIR"
 cd "$PIOSK_DIR"
-
-# echo -e "${INFO}Checking out latest release...${RESET}"
-# git checkout devel
-# git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
 
 echo -e "${INFO}Installing npm dependencies...${RESET}"
 npm i
@@ -62,15 +115,16 @@ PI_USER="$SUDO_USER"
 PI_SUID=$(id -u "$SUDO_USER")
 PI_HOME=$(eval echo ~"$SUDO_USER")
 
+# Create Ubuntu-compatible service templates
 sed -e "s|PI_HOME|$PI_HOME|g" \
     -e "s|PI_SUID|$PI_SUID|g" \
     -e "s|PI_USER|$PI_USER|g" \
-    "$PIOSK_DIR/services/piosk-runner.template" > "/etc/systemd/system/piosk-runner.service"
+    "$PIOSK_DIR/services/piosk-runner-ubuntu.template" > "/etc/systemd/system/piosk-runner.service"
 
 sed -e "s|PI_HOME|$PI_HOME|g" \
     -e "s|PI_SUID|$PI_SUID|g" \
     -e "s|PI_USER|$PI_USER|g" \
-    "$PIOSK_DIR/services/piosk-switcher.template" > "/etc/systemd/system/piosk-switcher.service"
+    "$PIOSK_DIR/services/piosk-switcher-ubuntu.template" > "/etc/systemd/system/piosk-switcher.service"
 
 cp "$PIOSK_DIR/services/piosk-dashboard.template" /etc/systemd/system/piosk-dashboard.service
 
@@ -88,9 +142,10 @@ echo -e "${INFO}Starting PiOSK daemons...${RESET}"
 # systemctl start piosk-switcher
 systemctl start piosk-dashboard
 
-echo -e "${CALLOUT}\nPiOSK is now installed.${RESET}"
+echo -e "${CALLOUT}\nPiOSK is now installed on Ubuntu.${RESET}"
 echo -e "Visit either of these links to access PiOSK dashboard:"
 echo -e "\t- ${INFO}\033[0;32mhttp://$(hostname)/${RESET} or,"
 echo -e "\t- ${INFO}http://$(hostname -I | cut -d " " -f1)/${RESET}"
 echo -e "Configure links to shuffle; then apply changes to reboot."
 echo -e "${WARNING}\033[0;31mThe kiosk mode will launch on next startup.${RESET}"
+echo -e "${INFO}Display manager configured: $DISPLAY_MANAGER${RESET}" 
