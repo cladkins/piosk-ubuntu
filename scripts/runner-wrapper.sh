@@ -13,26 +13,34 @@ sleep 5
 if [ -S /tmp/.X11-unix/X0 ]; then
     echo "X11 socket found, attempting to fix authorization..."
     
-    # Create .Xauthority if it doesn't exist
-    if [ ! -f "$XAUTHORITY" ]; then
-        touch "$XAUTHORITY"
-        chmod 600 "$XAUTHORITY"
+    # Try to copy authorization from the existing session
+    if [ -f "/home/cladkins/.Xauthority" ]; then
+        echo "Using existing .Xauthority file"
+    else
+        echo "No .Xauthority file found, trying to copy from display..."
+        # Try to copy the authorization from the display
+        xauth list "$DISPLAY" 2>/dev/null | while read line; do
+            if [ -n "$line" ]; then
+                echo "Found X11 auth: $line"
+                echo "$line" | xauth add "$DISPLAY" . trusted
+                break
+            fi
+        done
     fi
     
-    # Try to copy authorization from the display
-    xauth list | grep "$DISPLAY" >/dev/null 2>&1 || {
-        echo "No X11 authorization found, trying to generate..."
-        xauth generate "$DISPLAY" . trusted 2>/dev/null || echo "Failed to generate X11 auth"
-    }
+    # Alternative: try to connect without authorization
+    echo "Attempting to allow local connections..."
+    xhost +local: 2>/dev/null || echo "xhost failed, trying alternative method..."
 fi
 
 # Check which Chromium is available and use the appropriate one
-if command -v /usr/bin/chromium-browser >/dev/null 2>&1; then
-    echo "Using system Chromium: /usr/bin/chromium-browser"
-    CHROMIUM_CMD="/usr/bin/chromium-browser"
-elif command -v snap >/dev/null 2>&1 && snap list | grep -q chromium; then
+# Prioritize snap Chromium as it might handle permissions better
+if command -v snap >/dev/null 2>&1 && snap list | grep -q chromium; then
     echo "Using snap Chromium: snap run chromium"
     CHROMIUM_CMD="snap run chromium"
+elif command -v /usr/bin/chromium-browser >/dev/null 2>&1; then
+    echo "Using system Chromium: /usr/bin/chromium-browser"
+    CHROMIUM_CMD="/usr/bin/chromium-browser"
 else
     echo "No Chromium found!"
     exit 1

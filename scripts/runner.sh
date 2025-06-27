@@ -88,4 +88,9 @@ exec $CHROMIUM_CMD \
   --disable-features=VizDisplayCompositor \
   --disable-dev-shm-usage \
   --no-sandbox \
-  --disable-setuid-sandbox 
+  --disable-setuid-sandbox \
+  --disable-gpu-sandbox \
+  --disable-software-rasterizer \
+  --disable-background-timer-throttling \
+  --disable-backgrounding-occluded-windows \
+  --disable-renderer-backgrounding 
