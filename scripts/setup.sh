@@ -132,6 +132,39 @@ fi
 
 echo "npm dependencies installed successfully"
 
+# Install and configure nginx as reverse proxy
+echo "Installing and configuring nginx..."
+apt update
+apt install -y nginx
+
+# Create nginx configuration for PiOSK
+cat > /etc/nginx/sites-available/piosk << EOF
+server {
+    listen 80;
+    server_name _;
+    
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+    }
+}
+EOF
+
+# Enable the site and disable default
+ln -sf /etc/nginx/sites-available/piosk /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+
+# Test nginx configuration and restart
+nginx -t && systemctl restart nginx
+systemctl enable nginx
+
 # Create autostart entry for better X11 authorization
 echo "Creating autostart entry..."
 mkdir -p /home/$ACTUAL_USER/.config/autostart

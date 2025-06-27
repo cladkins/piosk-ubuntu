@@ -27,4 +27,4 @@ app.post('/config', (req, res) => {
   })
 })
 
-app.listen(80, console.error)
+app.listen(3000, console.error)
