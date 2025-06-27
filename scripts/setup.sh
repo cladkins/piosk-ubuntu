@@ -184,7 +184,23 @@ chmod 755 /opt/piosk/scripts
 chmod 644 /opt/piosk/config.json
 chmod 644 /opt/piosk/web/*
 
-# Install systemd services
+# Create autostart entry for better X11 authorization
+echo "Creating autostart entry..."
+mkdir -p /home/$ACTUAL_USER/.config/autostart
+cat > /home/$ACTUAL_USER/.config/autostart/piosk-kiosk.desktop << EOF
+[Desktop Entry]
+Type=Application
+Name=PiOSK Kiosk
+Comment=PiOSK Kiosk Mode
+Exec=/opt/piosk/scripts/runner.sh
+Terminal=false
+X-GNOME-Autostart-enabled=true
+EOF
+
+chown $ACTUAL_USER:$ACTUAL_USER /home/$ACTUAL_USER/.config/autostart/piosk-kiosk.desktop
+chmod +x /home/$ACTUAL_USER/.config/autostart/piosk-kiosk.desktop
+
+# Install systemd services (as backup/alternative)
 echo "Installing systemd services..."
 
 # Copy service templates
@@ -202,13 +218,15 @@ systemctl daemon-reload
 
 echo "=== Setup Complete ==="
 echo ""
-echo "To start PiOSK:"
-echo "  sudo systemctl start piosk-runner"
+echo "PiOSK will now start automatically when you log in to the desktop."
 echo ""
-echo "To enable PiOSK to start on boot:"
-echo "  sudo systemctl enable piosk-runner"
+echo "To start PiOSK manually:"
+echo "  /opt/piosk/scripts/runner.sh"
 echo ""
-echo "To view logs:"
+echo "To disable autostart:"
+echo "  rm ~/.config/autostart/piosk-kiosk.desktop"
+echo ""
+echo "To view logs (if using systemd service):"
 echo "  sudo journalctl -u piosk-runner -f"
 echo ""
 echo "To switch to dashboard mode:"
