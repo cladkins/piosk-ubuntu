@@ -1,90 +1,82 @@
-# PiOSK for Ubuntu - Project Summary
+# PiOSK Ubuntu - Project Summary
 
 ## Overview
 
-This project has been successfully converted from a Raspberry Pi-focused kiosk application to a Ubuntu-focused kiosk application. All Raspberry Pi specific files have been removed, and the project now exclusively targets Ubuntu systems.
+This project is an Ubuntu adaptation of the original [PiOSK](https://github.com/debloper/piosk) project by [Soumya Deb](https://github.com/debloper). The original PiOSK was designed for Raspberry Pi systems, and this fork has been modified to work seamlessly on Ubuntu desktop systems.
 
-## What Was Removed
+## Key Accomplishments
 
-### Raspberry Pi Specific Files
-- `scripts/setup.sh` (original Raspberry Pi version)
-- `scripts/cleanup.sh` (original Raspberry Pi version)
-- `scripts/runner.sh` (original Raspberry Pi version)
-- `scripts/switcher.sh` (original Raspberry Pi version)
-- `services/piosk-runner.template` (original Raspberry Pi version)
-- `services/piosk-switcher.template` (original Raspberry Pi version)
-- `README-UBUNTU.md` (redundant after main README update)
+### 1. Ubuntu System Integration
+- **Automatic Display Manager Detection**: Automatically detects and configures GDM3, LightDM, or SDDM
+- **Autologin Configuration**: Sets up automatic login for the user's display manager
+- **Autostart Integration**: Uses desktop autostart entries for better X11 authorization
+- **Systemd Services**: Proper systemd service integration for reliability
 
-### Files Renamed
-- `scripts/setup-ubuntu.sh` → `scripts/setup.sh`
-- `scripts/cleanup-ubuntu.sh` → `scripts/cleanup.sh`
-- `scripts/runner-ubuntu.sh` → `scripts/runner.sh`
-- `scripts/switcher-ubuntu.sh` → `scripts/switcher.sh`
-- `services/piosk-runner-ubuntu.template` → `services/piosk-runner.template`
-- `services/piosk-switcher-ubuntu.template` → `services/piosk-switcher.template`
-- `install-ubuntu.sh` → `install.sh`
+### 2. X11 Authorization Fixes
+- **Autostart Approach**: Replaced problematic systemd services with autostart entries
+- **Snap Chromium Support**: Prioritizes Ubuntu's snap Chromium for better compatibility
+- **Environment Handling**: Proper DISPLAY, XAUTHORITY, and XDG_RUNTIME_DIR setup
 
-## Current Project Structure
+### 3. Web Dashboard Improvements
+- **Nginx Reverse Proxy**: Secure web interface on port 80
+- **Port 3000 Backend**: Dashboard runs on port 3000 to avoid permission issues
+- **Automatic Dependency Installation**: npm dependencies installed automatically during setup
 
-```
-piosk-ubuntu/
-├── README.md                    # Main Ubuntu-focused documentation
-├── UBUNTU-CHANGES.md           # Project overview and technical details
-├── PROJECT-SUMMARY.md          # This file
-├── install.sh                  # Simple installation wrapper
-├── package.json                # Updated for Ubuntu focus
-├── index.js                    # Web dashboard server
-├── config.json.sample          # Sample configuration
-├── LICENSE                     # Project license
-├── .gitignore                  # Git ignore file
-├── assets/                     # Images and assets
-├── web/                        # Web dashboard files
-├── scripts/
-│   ├── setup.sh               # Main installation script
-│   ├── cleanup.sh             # Uninstallation script
-│   ├── runner.sh              # Chromium launcher
-│   └── switcher.sh            # Tab switcher
-└── services/
-    ├── piosk-runner.template   # Chromium service template
-    ├── piosk-switcher.template # Tab switcher service template
-    └── piosk-dashboard.template # Web dashboard service template
-```
+### 4. Installation Process
+- **Single Command Installation**: `curl -sSL https://raw.githubusercontent.com/cladkins/piosk-ubuntu/main/scripts/setup.sh | sudo bash -`
+- **Automatic Dependency Management**: Installs all required packages and dependencies
+- **Ownership and Permissions**: Proper file ownership and permissions setup
+- **Complete System Integration**: Configures autologin, services, and autostart
 
-## Key Features
+### 5. Documentation and Credits
+- **Updated README**: Comprehensive documentation with Ubuntu-specific instructions
+- **Proper Attribution**: Clear credits to the original author and project
+- **Troubleshooting Guide**: Ubuntu-specific troubleshooting information
+- **Cleanup Script**: Complete uninstallation process
 
-### Ubuntu-Specific Adaptations
-1. **Package Management**: Uses Ubuntu's `apt` package manager
-2. **Display Manager Support**: Auto-detects and configures GDM3, LightDM, and SDDM
-3. **Auto-login**: Properly configures auto-login for Ubuntu desktop environments
-4. **Browser Optimization**: Ubuntu-specific Chromium flags for better compatibility
-5. **Service Integration**: Enhanced systemd services with proper Ubuntu dependencies
-6. **Error Handling**: Fallbacks and better error handling for Ubuntu systems
+## Technical Changes from Original
 
-### Installation Methods
-1. **Quick Install**: `curl -sSL https://raw.githubusercontent.com/cladkins/piosk-ubuntu/main/scripts/setup.sh | sudo bash -`
-2. **Download Installer**: Download and run `install.sh`
-3. **Manual Install**: Clone repo and run `scripts/setup.sh`
+### Files Modified/Created
+- `scripts/setup.sh` - Complete Ubuntu setup script
+- `scripts/runner.sh` - Simplified Chromium runner
+- `scripts/runner-wrapper.sh` - X11 authorization wrapper
+- `scripts/cleanup.sh` - Complete cleanup script
+- `services/piosk-*.template` - Ubuntu-optimized service templates
+- `index.js` - Changed port from 80 to 3000
+- `README.md` - Comprehensive Ubuntu documentation
+- `package.json` - Updated metadata and credits
 
-## Compatibility
+### Key Technical Solutions
+1. **X11 Authorization**: Used autostart entries instead of systemd services
+2. **Port Binding**: Used nginx reverse proxy to avoid port 80 permission issues
+3. **Chromium Compatibility**: Prioritized snap Chromium over system Chromium
+4. **Dependency Management**: Automatic npm installation during setup
+5. **Service Management**: Proper systemd service configuration
 
-- **Ubuntu Versions**: 18.04 LTS and newer
-- **Desktop Environments**: GNOME, KDE, XFCE, and others
-- **Display Managers**: GDM3, LightDM, SDDM
-- **Display Systems**: X11 and Wayland
+## Installation Process
 
-## Usage
+The installation process now:
+1. Detects the display manager (GDM3/LightDM/SDDM)
+2. Configures autologin for the user
+3. Downloads and installs all files
+4. Installs npm dependencies
+5. Installs and configures nginx
+6. Creates autostart entries
+7. Sets up systemd services
+8. Configures proper ownership and permissions
 
-1. **Install**: Run the installation script
-2. **Configure**: Visit the web dashboard at `http://<ip-address>/`
-3. **Manage URLs**: Add, remove, or modify URLs through the web interface
-4. **Apply Changes**: Click "APPLY ⏻" to reboot and start kiosk mode
-5. **Uninstall**: Run `sudo /opt/piosk/scripts/cleanup.sh` when needed
+## Result
 
-## Project Status
+A fully functional kiosk system that:
+- Starts automatically on boot
+- Provides web-based configuration interface
+- Cycles through configured URLs
+- Works reliably on Ubuntu systems
+- Requires no manual intervention after installation
 
-✅ **Complete**: Project has been successfully converted to Ubuntu-only focus
-✅ **Clean**: All Raspberry Pi specific files removed
-✅ **Documented**: Comprehensive documentation updated
-✅ **Tested**: Scripts are executable and ready for use
+## Credits
 
-The project is now ready for Ubuntu users to easily set up kiosk mode displays on their Ubuntu machines. 
+- **Original Project**: [PiOSK by Soumya Deb](https://github.com/debloper/piosk)
+- **Original Author**: [Soumya Deb](https://github.com/debloper)
+- **Ubuntu Adaptation**: [cladkins](https://github.com/cladkins)
+- **License**: MPL-2.0 (same as original) 

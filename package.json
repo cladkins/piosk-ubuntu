@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/cladkins/piosk-ubuntu.git"
+    "url": "git+https://github.com/cladkins/piosk-ubuntu.git"
   },
   "keywords": [
     "piosk",
@@ -17,9 +17,14 @@
     "display manager",
     "gdm3",
     "lightdm",
-    "sddm"
+    "sddm",
+    "chromium",
+    "nginx"
   ],
-  "author": "Soumya Deb <debloper@gmail.com>",
+  "author": "cladkins <cladkins@github.com>",
+  "contributors": [
+    "Soumya Deb <debloper@gmail.com> (Original PiOSK author)"
+  ],
   "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/cladkins/piosk-ubuntu/issues"
@@ -27,5 +32,10 @@
   "homepage": "https://github.com/cladkins/piosk-ubuntu#readme",
   "dependencies": {
     "express": "^5.0.0-beta.3"
+  },
+  "originalProject": {
+    "name": "piosk",
+    "url": "https://github.com/debloper/piosk",
+    "author": "Soumya Deb"
   }
 }

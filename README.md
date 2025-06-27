@@ -1,18 +1,29 @@
-![PiOSK Banner](assets/banner.png)
-**One-shot set up Ubuntu in kiosk mode as a webpage shuffler, with a web interface for management.**
+![PiOSK Ubuntu](assets/pioskubuntu.png)
 
 # PiOSK for Ubuntu
 
+**One-shot set up Ubuntu in kiosk mode as a webpage shuffler, with a web interface for management.**
+
 PiOSK transforms your Ubuntu machine into a kiosk mode display that cycles through web pages automatically. It includes a web-based dashboard for easy management of the displayed URLs.
+
+## About This Project
+
+This is an **Ubuntu adaptation** of the original [PiOSK project](https://github.com/debloper/piosk) by [Soumya Deb](https://github.com/debloper). The original PiOSK was designed for Raspberry Pi, and this fork has been modified to work seamlessly on Ubuntu systems.
+
+**Original Project**: [PiOSK by Soumya Deb](https://github.com/debloper/piosk)  
+**Original Author**: [Soumya Deb](https://github.com/debloper)  
+**License**: MPL-2.0
 
 ## Features
 
-- **Automatic Setup**: Single script installation
+- **Automatic Setup**: Single script installation for Ubuntu
 - **Web Dashboard**: Manage URLs through a web interface
 - **Auto-login**: Configures automatic login for your display manager
 - **Tab Rotation**: Automatically cycles through configured web pages
 - **Systemd Integration**: Runs as system services for reliability
 - **Multiple Display Manager Support**: Works with GDM3, LightDM, and SDDM
+- **Nginx Reverse Proxy**: Secure web interface on port 80
+- **Snap Chromium Support**: Uses Ubuntu's snap Chromium for better compatibility
 
 ## System Requirements
 
@@ -20,6 +31,7 @@ PiOSK transforms your Ubuntu machine into a kiosk mode display that cycles throu
 - Desktop environment (GNOME, KDE, XFCE, etc.)
 - Internet connection for initial setup
 - At least 2GB RAM recommended
+- Snap Chromium or system Chromium installed
 
 ## Quick Installation
 
@@ -29,13 +41,13 @@ Run the following command in your terminal:
 curl -sSL https://raw.githubusercontent.com/cladkins/piosk-ubuntu/main/scripts/setup.sh | sudo bash -
 ```
 
-Or download and run the installer:
-
-```bash
-wget https://raw.githubusercontent.com/cladkins/piosk-ubuntu/main/install.sh
-chmod +x install.sh
-./install.sh
-```
+This single command will:
+- Install all dependencies
+- Configure autologin for your display manager
+- Set up the kiosk system
+- Install and configure nginx
+- Create autostart entries
+- Install systemd services
 
 ## Manual Installation
 
@@ -86,14 +98,44 @@ The setup script automatically detects and configures your display manager:
 - **LightDM**: Used by XFCE and some other desktop environments
 - **SDDM**: Used by KDE Plasma
 
+## How It Works
+
+1. **Autologin**: The system automatically logs in to the desktop on boot
+2. **Autostart**: The kiosk application starts automatically when the desktop loads
+3. **Web Dashboard**: Nginx serves the management interface on port 80
+4. **Tab Rotation**: Chromium cycles through configured URLs in kiosk mode
+5. **Configuration**: Changes made through the web interface are saved and applied on reboot
+
 ## Troubleshooting
 
 ### Common Issues
 
 1. **Display not working**: Ensure you're logged into a desktop session
-2. **Web dashboard not accessible**: Check if port 80 is available
+2. **Web dashboard not accessible**: Check if nginx is running: `sudo systemctl status nginx`
 3. **Chromium not starting**: Verify display permissions and X11 setup
 4. **Auto-login not working**: Check your display manager configuration
+
+### Service Management
+
+Check service status:
+```bash
+sudo systemctl status piosk-dashboard
+sudo systemctl status piosk-runner
+sudo systemctl status nginx
+```
+
+Restart services:
+```bash
+sudo systemctl restart piosk-dashboard
+sudo systemctl restart piosk-runner
+sudo systemctl restart nginx
+```
+
+View logs:
+```bash
+sudo journalctl -u piosk-dashboard -f
+sudo journalctl -u piosk-runner -f
+```
 
 ### Manual Display Manager Configuration
 
@@ -132,22 +174,6 @@ User=yourusername
 Session=ubuntu.desktop
 ```
 
-### Service Management
-
-Check service status:
-```bash
-sudo systemctl status piosk-dashboard
-sudo systemctl status piosk-runner
-sudo systemctl status piosk-switcher
-```
-
-Restart services:
-```bash
-sudo systemctl restart piosk-dashboard
-sudo systemctl restart piosk-runner
-sudo systemctl restart piosk-switcher
-```
-
 ## Uninstallation
 
 To remove PiOSK from your Ubuntu system:
@@ -163,25 +189,42 @@ sudo ./scripts/cleanup.sh
 
 ## Security Considerations
 
-- The web dashboard runs on port 80 by default
-- Consider changing the port if you have other web services
+- The web dashboard runs on port 80 through nginx
 - The kiosk mode runs with reduced privileges
 - Consider disabling unnecessary network services for production use
+- The system automatically logs in, so ensure physical security
+
+## Differences from Original PiOSK
+
+This Ubuntu version includes several improvements over the original Raspberry Pi version:
+
+- **Ubuntu-specific setup**: Optimized for Ubuntu systems
+- **Snap Chromium support**: Better compatibility with Ubuntu's package management
+- **Nginx reverse proxy**: More robust web server setup
+- **Autostart entries**: Better X11 authorization handling
+- **Systemd services**: Improved service management
+- **Multiple display manager support**: Works with GDM3, LightDM, and SDDM
 
 ## Contributing
 
-This is an Ubuntu adaptation of the original [PiOSK project](https://github.com/debloper/piosk). For the main project, visit: https://github.com/debloper/piosk
+This is an Ubuntu adaptation of the original [PiOSK project](https://github.com/debloper/piosk). 
 
-## License
+- **Original Project**: [PiOSK by Soumya Deb](https://github.com/debloper/piosk)
+- **Original Author**: [Soumya Deb](https://github.com/debloper)
+- **This Fork**: [PiOSK Ubuntu by cladkins](https://github.com/cladkins/piosk-ubuntu)
 
-MPL-2.0
-
-## Support
-
-For issues, please check:
+For issues with this Ubuntu version, please check:
 1. Your Ubuntu version and desktop environment
 2. Display manager configuration
 3. Network connectivity
 4. Service logs: `sudo journalctl -u piosk-*`
+
+## License
+
+MPL-2.0 - Same license as the original PiOSK project
+
+---
+
+**Credits**: This project is based on the original [PiOSK](https://github.com/debloper/piosk) by [Soumya Deb](https://github.com/debloper), adapted for Ubuntu systems.
 
 ![PiOSK Dashboard Web GUI](assets/dashboard.png)
