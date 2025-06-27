@@ -119,12 +119,12 @@ PI_HOME=$(eval echo ~"$SUDO_USER")
 sed -e "s|PI_HOME|$PI_HOME|g" \
     -e "s|PI_SUID|$PI_SUID|g" \
     -e "s|PI_USER|$PI_USER|g" \
-    "$PIOSK_DIR/services/piosk-runner-ubuntu.template" > "/etc/systemd/system/piosk-runner.service"
+    "$PIOSK_DIR/services/piosk-runner.template" > "/etc/systemd/system/piosk-runner.service"
 
 sed -e "s|PI_HOME|$PI_HOME|g" \
     -e "s|PI_SUID|$PI_SUID|g" \
     -e "s|PI_USER|$PI_USER|g" \
-    "$PIOSK_DIR/services/piosk-switcher-ubuntu.template" > "/etc/systemd/system/piosk-switcher.service"
+    "$PIOSK_DIR/services/piosk-switcher.template" > "/etc/systemd/system/piosk-switcher.service"
 
 cp "$PIOSK_DIR/services/piosk-dashboard.template" /etc/systemd/system/piosk-dashboard.service
 
