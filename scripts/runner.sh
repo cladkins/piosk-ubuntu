@@ -5,6 +5,7 @@ echo "Running as user: $(whoami)"
 echo "Current DISPLAY: $DISPLAY"
 echo "Current XAUTHORITY: $XAUTHORITY"
 echo "Current XDG_RUNTIME_DIR: $XDG_RUNTIME_DIR"
+echo "Chromium command: ${CHROMIUM_CMD:-/usr/bin/chromium-browser}"
 echo ""
 
 # Wait for display to be ready
@@ -53,16 +54,19 @@ fi
 echo "Allowing local connections to X server..."
 xhost +local: >/dev/null 2>&1 || echo "xhost command failed, continuing anyway..."
 
-# Check if chromium-browser is available
-if ! command -v /usr/bin/chromium-browser >/dev/null 2>&1; then
-    echo "chromium-browser not found at /usr/bin/chromium-browser"
+# Use the Chromium command from wrapper or default
+CHROMIUM_CMD="${CHROMIUM_CMD:-/usr/bin/chromium-browser}"
+
+# Check if chromium is available
+if ! command -v $CHROMIUM_CMD >/dev/null 2>&1; then
+    echo "Chromium not found at: $CHROMIUM_CMD"
     exit 1
 fi
 
 echo "Starting Chromium with URLs: $(jq -r '.urls | map(.url) | join(" ")' /opt/piosk/config.json)"
 
 # Launch Chromium with Ubuntu-optimized parameters
-exec /usr/bin/chromium-browser \
+exec $CHROMIUM_CMD \
   $(jq -r '.urls | map(.url) | join(" ")' /opt/piosk/config.json) \
   --disable-component-update \
   --disable-composited-antialiasing \

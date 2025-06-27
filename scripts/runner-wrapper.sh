@@ -26,5 +26,17 @@ if [ -S /tmp/.X11-unix/X0 ]; then
     }
 fi
 
-# Run the main script
-exec /opt/piosk/scripts/runner.sh 
+# Check which Chromium is available and use the appropriate one
+if command -v /usr/bin/chromium-browser >/dev/null 2>&1; then
+    echo "Using system Chromium: /usr/bin/chromium-browser"
+    CHROMIUM_CMD="/usr/bin/chromium-browser"
+elif command -v snap >/dev/null 2>&1 && snap list | grep -q chromium; then
+    echo "Using snap Chromium: snap run chromium"
+    CHROMIUM_CMD="snap run chromium"
+else
+    echo "No Chromium found!"
+    exit 1
+fi
+
+# Run the main script with the correct Chromium command
+CHROMIUM_CMD="$CHROMIUM_CMD" exec /opt/piosk/scripts/runner.sh 
