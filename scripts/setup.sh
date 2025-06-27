@@ -148,4 +148,71 @@ echo -e "\t- ${INFO}\033[0;32mhttp://$(hostname)/${RESET} or,"
 echo -e "\t- ${INFO}http://$(hostname -I | cut -d " " -f1)/${RESET}"
 echo -e "Configure links to shuffle; then apply changes to reboot."
 echo -e "${WARNING}\033[0;31mThe kiosk mode will launch on next startup.${RESET}"
-echo -e "${INFO}Display manager configured: $DISPLAY_MANAGER${RESET}" 
+echo -e "${INFO}Display manager configured: $DISPLAY_MANAGER${RESET}"
+
+# Exit on any error
+set -e
+
+echo "=== PiOSK Ubuntu Setup ==="
+
+# Get the current user (who ran sudo)
+ACTUAL_USER=${SUDO_USER:-$USER}
+
+echo "Setting up PiOSK for user: $ACTUAL_USER"
+
+# Create installation directory
+echo "Creating installation directory..."
+mkdir -p /opt/piosk
+
+# Copy files
+echo "Copying files..."
+cp -r * /opt/piosk/
+cp -r .* /opt/piosk/ 2>/dev/null || true
+
+# Make scripts executable
+echo "Making scripts executable..."
+chmod +x /opt/piosk/scripts/*.sh
+
+# Fix ownership - make everything owned by the actual user
+echo "Fixing ownership to user: $ACTUAL_USER"
+chown -R $ACTUAL_USER:$ACTUAL_USER /opt/piosk
+
+# Set proper permissions
+echo "Setting proper permissions..."
+chmod 755 /opt/piosk
+chmod 755 /opt/piosk/scripts
+chmod 644 /opt/piosk/config.json
+chmod 644 /opt/piosk/web/*
+
+# Install systemd services
+echo "Installing systemd services..."
+
+# Copy service templates
+cp /opt/piosk/services/piosk-dashboard.template /etc/systemd/system/piosk-dashboard.service
+cp /opt/piosk/services/piosk-runner.template /etc/systemd/system/piosk-runner.service
+cp /opt/piosk/services/piosk-switcher.template /etc/systemd/system/piosk-switcher.service
+
+# Replace placeholders in service files
+sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-dashboard.service
+sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-runner.service
+sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-switcher.service
+
+# Reload systemd
+systemctl daemon-reload
+
+echo "=== Setup Complete ==="
+echo ""
+echo "To start PiOSK:"
+echo "  sudo systemctl start piosk-runner"
+echo ""
+echo "To enable PiOSK to start on boot:"
+echo "  sudo systemctl enable piosk-runner"
+echo ""
+echo "To view logs:"
+echo "  sudo journalctl -u piosk-runner -f"
+echo ""
+echo "To switch to dashboard mode:"
+echo "  sudo systemctl start piosk-dashboard"
+echo ""
+echo "To switch back to kiosk mode:"
+echo "  sudo systemctl start piosk-runner" 
