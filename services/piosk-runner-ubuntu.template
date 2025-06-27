@@ -1,0 +1,20 @@
+[Unit]
+Description=Launch PiOSK runner to start Chromium on Ubuntu
+After=network.target graphical-session.target
+Wants=graphical-session.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/sleep 15
+ExecStart=/opt/piosk/scripts/runner-ubuntu.sh
+User=PI_USER
+WorkingDirectory=PI_HOME
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=PI_HOME/.Xauthority
+Environment=XDG_RUNTIME_DIR=/run/user/PI_SUID
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/PI_SUID/bus
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical.target 

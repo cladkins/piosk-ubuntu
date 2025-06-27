@@ -1,6 +1,9 @@
 ![PiOSK Banner](assets/banner.png)
 **One-shot set up Raspberry Pi in kiosk mode as a webpage shuffler, with a web interface for management.**
 
+> [!NOTE]  
+> **Ubuntu Users**: If you're using Ubuntu instead of Raspberry Pi OS, check out the [Ubuntu-compatible version](README-UBUNTU.md) with adapted scripts and configuration for Ubuntu systems.
+
 # 0. Foreword
 
 This started as a simple automation script &mdash; a wrapper of the [official Raspberry Pi kiosk mode tutorial](https://www.raspberrypi.com/tutorials/how-to-use-a-raspberry-pi-in-kiosk-mode/) for personal use. Then one thing lead to the other and I found myself installing nodejs & writing systemd unit files...
