@@ -20,10 +20,13 @@ echo "Setting up PiOSK for user: $ACTUAL_USER"
 echo "Creating installation directory..."
 mkdir -p /opt/piosk
 
-# Copy files
-echo "Copying files..."
-cp -r * /opt/piosk/
-cp -r .* /opt/piosk/ 2>/dev/null || true
+# Download files from GitHub
+echo "Downloading files from GitHub..."
+cd /tmp
+git clone https://github.com/cladkins/piosk-ubuntu.git piosk-temp
+cp -r piosk-temp/* /opt/piosk/
+cp -r piosk-temp/.* /opt/piosk/ 2>/dev/null || true
+rm -rf piosk-temp
 
 # Make scripts executable
 echo "Making scripts executable..."
