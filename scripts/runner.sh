@@ -81,7 +81,6 @@ exec /usr/bin/chromium-browser \
   --kiosk \
   --no-first-run \
   --noerrdialogs \
-  --disable-web-security \
   --disable-features=VizDisplayCompositor \
   --disable-dev-shm-usage \
   --no-sandbox \
