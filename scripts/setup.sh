@@ -64,6 +64,69 @@ EOF
         ;;
 esac
 
+# Disable screen lock and power management
+echo "Disabling screen lock and power management..."
+mkdir -p /home/$ACTUAL_USER/.config/autostart
+
+# Disable screen lock for GNOME
+if command -v gsettings >/dev/null 2>&1; then
+    echo "Configuring GNOME power settings..."
+    sudo -u $ACTUAL_USER gsettings set org.gnome.desktop.session idle-delay 0
+    sudo -u $ACTUAL_USER gsettings set org.gnome.desktop.screensaver lock-enabled false
+    sudo -u $ACTUAL_USER gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
+    sudo -u $ACTUAL_USER gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 0
+    sudo -u $ACTUAL_USER gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 0
+    sudo -u $ACTUAL_USER gsettings set org.gnome.settings-daemon.plugins.power power-button-action 'nothing'
+fi
+
+# Disable screen lock for KDE
+if command -v kwriteconfig5 >/dev/null 2>&1; then
+    echo "Configuring KDE power settings..."
+    sudo -u $ACTUAL_USER kwriteconfig5 --file kscreenlockerrc --group Daemon --key Autolock false
+    sudo -u $ACTUAL_USER kwriteconfig5 --file powermanagementprofilesrc --group AC --group DPMSControl --key idleTime 0
+    sudo -u $ACTUAL_USER kwriteconfig5 --file powermanagementprofilesrc --group AC --group SuspendSession --key idleTime 0
+fi
+
+# Disable screen lock for XFCE
+if command -v xfconf-query >/dev/null 2>&1; then
+    echo "Configuring XFCE power settings..."
+    sudo -u $ACTUAL_USER xfconf-query -c xfce4-session -p /general/LockScreen -s false
+    sudo -u $ACTUAL_USER xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/lid-action-on-ac -s 0
+    sudo -u $ACTUAL_USER xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/lid-action-on-battery -s 0
+fi
+
+# Create system-wide power management settings
+echo "Creating system-wide power management settings..."
+cat > /etc/systemd/logind.conf.d/99-piosk.conf << EOF
+[Login]
+HandlePowerKey=ignore
+HandleSuspendKey=ignore
+HandleHibernateKey=ignore
+HandleLidSwitch=ignore
+HandleLidSwitchExternalPower=ignore
+HandleLidSwitchDocked=ignore
+IdleAction=ignore
+IdleActionSec=0
+EOF
+
+# Disable system sleep/hibernate
+echo "Disabling system sleep and hibernate..."
+systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+
+# Create autostart entry to disable screen lock on login
+cat > /home/$ACTUAL_USER/.config/autostart/disable-screenlock.desktop << EOF
+[Desktop Entry]
+Type=Application
+Name=Disable Screen Lock
+Comment=Disable screen lock for kiosk mode
+Exec=sh -c "gsettings set org.gnome.desktop.session idle-delay 0; gsettings set org.gnome.desktop.screensaver lock-enabled false; gsettings set org.gnome.desktop.screensaver idle-activation-enabled false; gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 0; gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 0"
+Terminal=false
+X-GNOME-Autostart-enabled=true
+EOF
+
+chown $ACTUAL_USER:$ACTUAL_USER /home/$ACTUAL_USER/.config/autostart/disable-screenlock.desktop
+chmod +x /home/$ACTUAL_USER/.config/autostart/disable-screenlock.desktop
+
 # Create installation directory
 echo "Creating installation directory..."
 mkdir -p /opt/piosk
