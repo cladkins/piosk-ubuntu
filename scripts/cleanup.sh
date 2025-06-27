@@ -34,7 +34,6 @@ rm -f /etc/systemd/system/piosk-switcher.service
 # Remove autostart entry
 echo "Removing autostart entry..."
 rm -f /home/$ACTUAL_USER/.config/autostart/piosk-kiosk.desktop
-rm -f /home/$ACTUAL_USER/.config/autostart/disable-screenlock.desktop
 
 # Remove nginx configuration
 echo "Removing nginx configuration..."
@@ -52,17 +51,6 @@ if systemctl is-active --quiet nginx; then
     echo "Restarting nginx..."
     systemctl restart nginx
 fi
-
-# Remove power management settings
-echo "Removing power management settings..."
-rm -f /etc/systemd/logind.conf.d/99-piosk.conf
-
-# Re-enable system sleep/hibernate
-echo "Re-enabling system sleep and hibernate..."
-systemctl unmask sleep.target suspend.target hibernate.target hybrid-sleep.target 2>/dev/null || true
-
-# Restart systemd-logind to apply changes
-systemctl restart systemd-logind 2>/dev/null || true
 
 # Remove installation directory
 echo "Removing installation directory..."

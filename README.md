@@ -24,8 +24,6 @@ This is an **Ubuntu adaptation** of the original [PiOSK project](https://github.
 - **Multiple Display Manager Support**: Works with GDM3, LightDM, and SDDM
 - **Nginx Reverse Proxy**: Secure web interface on port 80
 - **Snap Chromium Support**: Uses Ubuntu's snap Chromium for better compatibility
-- **Power Management**: Disables screen lock, sleep, and hibernate for continuous operation
-- **Desktop Environment Support**: Works with GNOME, KDE, and XFCE
 
 ## System Requirements
 
@@ -107,18 +105,6 @@ The setup script automatically detects and configures your display manager:
 3. **Web Dashboard**: Nginx serves the management interface on port 80
 4. **Tab Rotation**: Chromium cycles through configured URLs in kiosk mode
 5. **Configuration**: Changes made through the web interface are saved and applied on reboot
-6. **Power Management**: Screen lock, sleep, and hibernate are disabled for continuous operation
-
-## Power Management
-
-PiOSK automatically configures your system for continuous kiosk operation by:
-
-- **Disabling Screen Lock**: Prevents the screen from locking due to inactivity
-- **Disabling Sleep/Hibernate**: Prevents the system from going to sleep
-- **Disabling Power Button Actions**: Prevents accidental shutdowns
-- **Configuring Desktop Settings**: Works with GNOME, KDE, and XFCE environments
-
-These settings ensure your kiosk runs continuously without interruption. The settings are automatically restored when you uninstall PiOSK.
 
 ## Troubleshooting
 
