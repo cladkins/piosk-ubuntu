@@ -1,7 +1,7 @@
 [Unit]
 Description=Launch PiOSK switcher to switch tabs on Ubuntu
-After=piosk-runner.service
-Wants=graphical-session.target
+After=piosk-runner.service display-manager.service
+Wants=display-manager.service
 
 [Service]
 Type=simple

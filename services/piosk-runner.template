@@ -1,8 +1,7 @@
 [Unit]
 Description=Launch PiOSK runner to start Chromium on Ubuntu
-After=network.target graphical-session.target
-Wants=graphical-session.target
-Requires=graphical-session.target
+After=network.target display-manager.service
+Wants=display-manager.service
 
 [Service]
 Type=simple
@@ -12,6 +11,7 @@ User=PI_USER
 WorkingDirectory=PI_HOME
 Restart=on-failure
 RestartSec=10
+Environment=DISPLAY=:0
 
 [Install]
 WantedBy=graphical.target 
