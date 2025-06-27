@@ -53,6 +53,7 @@ fi
 # Allow local connections to X server
 echo "Allowing local connections to X server..."
 xhost +local: >/dev/null 2>&1 || echo "xhost command failed, continuing anyway..."
+xhost + >/dev/null 2>&1 || echo "xhost + failed, continuing anyway..."
 
 # Use the Chromium command from wrapper or default
 CHROMIUM_CMD="${CHROMIUM_CMD:-/usr/bin/chromium-browser}"
@@ -93,4 +94,18 @@ exec $CHROMIUM_CMD \
   --disable-software-rasterizer \
   --disable-background-timer-throttling \
   --disable-backgrounding-occluded-windows \
-  --disable-renderer-backgrounding 
+  --disable-renderer-backgrounding \
+  --disable-xvfb \
+  --disable-ipc-flooding-protection \
+  --disable-features=TranslateUI \
+  --disable-extensions \
+  --disable-plugins \
+  --disable-default-apps \
+  --disable-sync \
+  --disable-translate \
+  --disable-web-security \
+  --allow-running-insecure-content \
+  --disable-features=VizDisplayCompositor \
+  --disable-features=UseChromeOSDirectVideoDecoder \
+  --disable-features=VaapiVideoDecoder \
+  --disable-features=VaapiVideoEncoder 
