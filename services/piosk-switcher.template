@@ -5,7 +5,7 @@ Wants=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart=/opt/piosk/scripts/switcher-ubuntu.sh
+ExecStart=/opt/piosk/scripts/switcher.sh
 User=PI_USER
 WorkingDirectory=PI_HOME
 Environment=DISPLAY=:0

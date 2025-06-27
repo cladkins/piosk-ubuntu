@@ -6,7 +6,7 @@ Wants=graphical-session.target
 [Service]
 Type=simple
 ExecStartPre=/usr/bin/sleep 15
-ExecStart=/opt/piosk/scripts/runner-ubuntu.sh
+ExecStart=/opt/piosk/scripts/runner.sh
 User=PI_USER
 WorkingDirectory=PI_HOME
 Environment=DISPLAY=:0
