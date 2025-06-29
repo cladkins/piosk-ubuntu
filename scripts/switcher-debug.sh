@@ -1,51 +1,22 @@
 #!/bin/bash
 
-# PiOSK Switcher using Chromium Remote Debugging API
-# This script uses the Chrome DevTools Protocol to control tab switching
+# PiOSK Tab Switcher using Chromium Remote Debugging API
+# This script cycles through tabs in Chromium using the remote debugging API
 
-# Get the user ID dynamically
-PI_SUID=$(id -u)
-export XDG_RUNTIME_DIR=/run/user/$PI_SUID
-
-# Set display environment
-export DISPLAY=:0
-
-# Wait for Chromium to start
-sleep 20
-
-# Read configuration from config.json
+# Load configuration
 CONFIG_FILE="/opt/piosk/config.json"
-
-# Default values
-SWITCHER_ENABLED=true
-SWITCHER_INTERVAL=10
-SWITCHER_REFRESH_CYCLE=10
-
-# Read configuration if file exists
-if [ -f "$CONFIG_FILE" ]; then
-    # Read switcher configuration
-    SWITCHER_ENABLED=$(jq -r '.switcher.enabled // true' "$CONFIG_FILE")
-    SWITCHER_INTERVAL=$(jq -r '.switcher.interval // 10' "$CONFIG_FILE")
-    SWITCHER_REFRESH_CYCLE=$(jq -r '.switcher.refresh_cycle // 10' "$CONFIG_FILE")
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "ERROR: Config file not found at $CONFIG_FILE"
+    exit 1
 fi
 
-# Check if switcher is enabled
-if [ "$SWITCHER_ENABLED" != "true" ]; then
-    echo "Switcher is disabled in configuration"
-    exit 0
-fi
-
-echo "Starting PiOSK switcher with interval: ${SWITCHER_INTERVAL}s, refresh cycle: ${SWITCHER_REFRESH_CYCLE}"
-echo "Using Chromium remote debugging API"
-
-# count the number of URLs, that are configured to cycle through
+# Read configuration
+SWITCHER_INTERVAL=$(jq -r '.switcher.interval // 10' "$CONFIG_FILE")
+SWITCHER_REFRESH_CYCLE=$(jq -r '.switcher.refresh_cycle // 10' "$CONFIG_FILE")
 URLS=$(jq -r '.urls | length' "$CONFIG_FILE")
 
-if [ "$URLS" -eq 0 ]; then
-    echo "No URLs configured, exiting switcher"
-    exit 0
-fi
-
+echo "Starting PiOSK switcher with interval: ${SWITCHER_INTERVAL}s, refresh cycle: $SWITCHER_REFRESH_CYCLE"
+echo "Using Chromium remote debugging API"
 echo "Found $URLS URLs to cycle through"
 
 # Function to get list of tabs from Chromium
@@ -57,8 +28,6 @@ get_tabs() {
 show_all_tabs() {
     echo "=== All Available Tabs ==="
     curl -s http://localhost:9222/json/list | jq -r '.[] | select(.type == "page") | "ID: \(.id) | URL: \(.url)"'
-    echo "=== Current Active Tab ==="
-    curl -s http://localhost:9222/json/active | jq -r '"ID: \(.id) | URL: \(.url)"'
     echo "========================"
 }
 
@@ -77,64 +46,40 @@ reload_tab() {
         --data-urlencode "tabId=$tab_id" >/dev/null
 }
 
-# Function to get current tab index
-get_current_tab_index() {
+# Function to refresh current tab
+refresh_current_tab() {
     local tabs=($(get_tabs))
-    local current_tab_id=$(curl -s http://localhost:9222/json/active | jq -r '.id')
+    local current_index=$CURRENT_TAB_INDEX
+    local tab_id="${tabs[$current_index]}"
     
-    for i in "${!tabs[@]}"; do
-        if [[ "${tabs[$i]}" == "$current_tab_id" ]]; then
-            echo $i
-            return
-        fi
-    done
-    echo 0
+    echo "Refreshing tab $current_index (ID: $tab_id)"
+    reload_tab "$tab_id"
 }
 
 # Function to switch to next tab
 switch_to_next_tab() {
     local tabs=($(get_tabs))
-    local current_index=$(get_current_tab_index)
-    local next_index=$(( (current_index + 1) % ${#tabs[@]} ))
+    local next_index=$(( (CURRENT_TAB_INDEX + 1) % ${#tabs[@]} ))
     
-    echo "Switching from tab $current_index to tab $next_index (total tabs: ${#tabs[@]})"
-    echo "Current tab ID: $(curl -s http://localhost:9222/json/active | jq -r '.id')"
+    echo "Switching from tab $CURRENT_TAB_INDEX to tab $next_index (total tabs: ${#tabs[@]})"
     echo "Next tab ID: ${tabs[$next_index]}"
     
     activate_tab "${tabs[$next_index]}"
+    CURRENT_TAB_INDEX=$next_index
     
-    # Verify the switch worked
-    sleep 1
-    local new_current_id=$(curl -s http://localhost:9222/json/active | jq -r '.id')
-    if [[ "$new_current_id" == "${tabs[$next_index]}" ]]; then
-        echo "Tab switch successful"
-        return 0
-    else
-        echo "Tab switch failed - expected ${tabs[$next_index]}, got $new_current_id"
-        return 1
-    fi
+    echo "Tab switch successful - now on tab $CURRENT_TAB_INDEX"
+    return 0
 }
 
-# Function to refresh current tab
-refresh_current_tab() {
-    local current_tab_id=$(curl -s http://localhost:9222/json/active | jq -r '.id')
-    echo "Refreshing current tab"
-    reload_tab "$current_tab_id"
-}
-
-# Wait for Chromium to be ready
+# Wait for Chromium remote debugging to be available
 echo "Waiting for Chromium remote debugging to be available..."
-for i in {1..30}; do
-    if curl -s http://localhost:9222/json/list >/dev/null 2>&1; then
-        echo "Chromium remote debugging is ready"
-        break
-    fi
-    if [ $i -eq 30 ]; then
-        echo "ERROR: Chromium remote debugging not available after 30 seconds"
-        exit 1
-    fi
+while ! curl -s http://localhost:9222/json/list >/dev/null 2>&1; do
     sleep 1
 done
+echo "Chromium remote debugging is ready"
+
+# Initialize current tab index
+CURRENT_TAB_INDEX=0
 
 # switch tabs each interval, refresh tabs each refresh_cycle & then reset
 for ((TURN=1; TURN<=$((SWITCHER_REFRESH_CYCLE*URLS)); TURN++)) do
