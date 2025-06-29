@@ -27,7 +27,12 @@ get_tabs() {
 # Function to show all tabs for debugging
 show_all_tabs() {
     echo "=== All Available Tabs ==="
-    curl -s http://localhost:9222/json/list | jq -r '.[] | select(.type == "page") | "ID: \(.id) | URL: \(.url)"'
+    local tabs=($(get_tabs))
+    for i in "${!tabs[@]}"; do
+        local url=$(curl -s http://localhost:9222/json/list | jq -r ".[] | select(.id == \"${tabs[$i]}\") | .url")
+        echo "Tab $i: ID: ${tabs[$i]} | URL: $url"
+    done
+    echo "Current tab index: $CURRENT_TAB_INDEX"
     echo "========================"
 }
 
@@ -67,6 +72,9 @@ switch_to_next_tab() {
     activate_tab "${tabs[$next_index]}"
     CURRENT_TAB_INDEX=$next_index
     
+    # Small delay to ensure switch completes
+    sleep 0.5
+    
     echo "Tab switch successful - now on tab $CURRENT_TAB_INDEX"
     return 0
 }
@@ -84,10 +92,11 @@ CURRENT_TAB_INDEX=0
 # switch tabs each interval, refresh tabs each refresh_cycle & then reset
 for ((TURN=1; TURN<=$((SWITCHER_REFRESH_CYCLE*URLS)); TURN++)) do
   if [ $TURN -le $((SWITCHER_REFRESH_CYCLE*URLS)) ]; then
-    echo "Switching to next tab (turn $TURN)"
+    echo "=== Turn $TURN ==="
+    echo "Current tab index before switch: $CURRENT_TAB_INDEX"
     
     # Show debug info every few turns
-    if [ $((TURN % 5)) -eq 1 ]; then
+    if [ $((TURN % 3)) -eq 1 ]; then
         show_all_tabs
     fi
     
@@ -96,6 +105,9 @@ for ((TURN=1; TURN<=$((SWITCHER_REFRESH_CYCLE*URLS)); TURN++)) do
         echo "ERROR: Failed to switch tab, exiting"
         exit 1
     fi
+    
+    echo "Current tab index after switch: $CURRENT_TAB_INDEX"
+    echo "=================="
     
     if [ $TURN -gt $(((SWITCHER_REFRESH_CYCLE-1)*URLS)) ]; then
       echo "Refreshing current tab"
