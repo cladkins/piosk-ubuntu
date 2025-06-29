@@ -16,14 +16,9 @@ app.post('/config', (req, res) => {
     if (err) {
       console.error(err)
       res.status(500).send('Could not save config.')
+      return
     }
-    exe('reboot', err => {
-      if (err) {
-        console.error(err)
-        res.status(500).send('Could not reboot to apply config. Retry or reboot manually.')
-      }
-      res.status(200).send('New config applied; rebooting for changes to take effect...')
-    })
+    res.status(200).send('Settings saved. Please reboot the system to apply changes.')
   })
 })
 
