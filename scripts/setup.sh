@@ -236,6 +236,7 @@ X-GNOME-Autostart-enabled=true
 EOF
 
 chown $ACTUAL_USER:$ACTUAL_USER /home/$ACTUAL_USER/.config/autostart/piosk-switcher-enable.desktop
+chmod +x /home/$ACTUAL_USER/.config/autostart/piosk-switcher-enable.desktop
 
 # Try to enable the user service, but don't fail if user session isn't available
 echo "Enabling PiOSK switcher service as user service..."
