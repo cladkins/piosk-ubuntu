@@ -38,6 +38,15 @@ fi
 echo "Starting PiOSK switcher with interval: ${SWITCHER_INTERVAL}s, refresh cycle: ${SWITCHER_REFRESH_CYCLE}"
 echo "Using display: $DISPLAY"
 
+# Debug: Check display and window status
+echo "Checking display and window status..."
+if command -v xdotool >/dev/null 2>&1; then
+    echo "Available windows:"
+    xdotool search --name "Chromium" 2>/dev/null || echo "No Chromium windows found"
+    echo "All windows:"
+    xdotool search --name "" 2>/dev/null | head -5 || echo "No windows found"
+fi
+
 # count the number of URLs, that are configured to cycle through
 URLS=$(jq -r '.urls | length' "$CONFIG_FILE")
 
@@ -68,8 +77,18 @@ fi
 # Function to send keyboard events
 send_key() {
     local key="$1"
+    
+    # First, try to focus the Chromium window
     case $KEYBOARD_TOOL in
         "xdotool")
+            # Focus Chromium window first
+            xdotool search --name "Chromium" windowactivate 2>/dev/null || {
+                echo "Failed to focus Chromium window"
+                return 1
+            }
+            sleep 0.5
+            
+            # Now send the key
             xdotool key "$key" 2>/dev/null || {
                 echo "xdotool failed for key: $key"
                 return 1
