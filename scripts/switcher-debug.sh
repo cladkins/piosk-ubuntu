@@ -51,32 +51,63 @@ reload_tab() {
         --data-urlencode "tabId=$tab_id" >/dev/null
 }
 
-# Function to refresh current tab
-refresh_current_tab() {
+# Function to get current tab ID
+get_current_tab_id() {
+    # Try to get the active tab, but if that fails, use the first tab
+    local active_tab=$(curl -s http://localhost:9222/json/active 2>/dev/null | jq -r '.id // empty')
+    if [ -n "$active_tab" ] && [ "$active_tab" != "null" ]; then
+        echo "$active_tab"
+    else
+        # Fallback to first tab
+        get_tabs | head -1
+    fi
+}
+
+# Function to get current tab index
+get_current_tab_index() {
+    local current_tab_id=$(get_current_tab_id)
     local tabs=($(get_tabs))
-    local current_index=$CURRENT_TAB_INDEX
-    local tab_id="${tabs[$current_index]}"
     
-    echo "Refreshing tab $current_index (ID: $tab_id)"
-    reload_tab "$tab_id"
+    for i in "${!tabs[@]}"; do
+        if [[ "${tabs[$i]}" == "$current_tab_id" ]]; then
+            echo $i
+            return
+        fi
+    done
+    echo 0
 }
 
 # Function to switch to next tab
 switch_to_next_tab() {
     local tabs=($(get_tabs))
-    local next_index=$(( (CURRENT_TAB_INDEX + 1) % ${#tabs[@]} ))
+    local current_index=$(get_current_tab_index)
+    local next_index=$(( (current_index + 1) % ${#tabs[@]} ))
     
-    echo "Switching from tab $CURRENT_TAB_INDEX to tab $next_index (total tabs: ${#tabs[@]})"
+    echo "Switching from tab $current_index to tab $next_index (total tabs: ${#tabs[@]})"
+    echo "Current tab ID: $(get_current_tab_id)"
     echo "Next tab ID: ${tabs[$next_index]}"
     
     activate_tab "${tabs[$next_index]}"
-    CURRENT_TAB_INDEX=$next_index
     
     # Small delay to ensure switch completes
     sleep 0.5
     
-    echo "Tab switch successful - now on tab $CURRENT_TAB_INDEX"
-    return 0
+    # Verify the switch worked
+    local new_current_id=$(get_current_tab_id)
+    if [[ "$new_current_id" == "${tabs[$next_index]}" ]]; then
+        echo "Tab switch successful - now on tab $next_index"
+        return 0
+    else
+        echo "Tab switch verification failed - expected ${tabs[$next_index]}, got $new_current_id"
+        return 1
+    fi
+}
+
+# Function to refresh current tab
+refresh_current_tab() {
+    local current_tab_id=$(get_current_tab_id)
+    echo "Refreshing current tab (ID: $current_tab_id)"
+    reload_tab "$current_tab_id"
 }
 
 # Wait for Chromium remote debugging to be available
@@ -86,14 +117,11 @@ while ! curl -s http://localhost:9222/json/list >/dev/null 2>&1; do
 done
 echo "Chromium remote debugging is ready"
 
-# Initialize current tab index
-CURRENT_TAB_INDEX=0
-
 # switch tabs each interval, refresh tabs each refresh_cycle & then reset
 for ((TURN=1; TURN<=$((SWITCHER_REFRESH_CYCLE*URLS)); TURN++)) do
   if [ $TURN -le $((SWITCHER_REFRESH_CYCLE*URLS)) ]; then
     echo "=== Turn $TURN ==="
-    echo "Current tab index before switch: $CURRENT_TAB_INDEX"
+    echo "Current tab index before switch: $(get_current_tab_index)"
     
     # Show debug info every few turns
     if [ $((TURN % 3)) -eq 1 ]; then
@@ -106,7 +134,7 @@ for ((TURN=1; TURN<=$((SWITCHER_REFRESH_CYCLE*URLS)); TURN++)) do
         exit 1
     fi
     
-    echo "Current tab index after switch: $CURRENT_TAB_INDEX"
+    echo "Current tab index after switch: $(get_current_tab_index)"
     echo "=================="
     
     if [ $TURN -gt $(((SWITCHER_REFRESH_CYCLE-1)*URLS)) ]; then
