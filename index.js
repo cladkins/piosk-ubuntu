@@ -12,70 +12,15 @@ app.get('/config', (req, res) => {
 })
 
 app.post('/config', (req, res) => {
-  // Read current config to check if switcher enabled status changed
-  let currentConfig = {}
-  try {
-    if (nfs.existsSync('./config.json')) {
-      currentConfig = JSON.parse(nfs.readFileSync('./config.json', 'utf8'))
-    }
-  } catch (err) {
-    console.error('Error reading current config:', err)
-  }
-
-  const newConfig = req.body
-  const oldSwitcherEnabled = currentConfig.switcher?.enabled !== false
-  const newSwitcherEnabled = newConfig.switcher?.enabled !== false
-
   // Save the new configuration
-  nfs.writeFile('./config.json', JSON.stringify(newConfig, null, "  "), err => {
+  nfs.writeFile('./config.json', JSON.stringify(req.body, null, "  "), err => {
     if (err) {
       console.error(err)
       res.status(500).send('Could not save config.')
       return
     }
 
-    // If switcher enabled status changed, update the service
-    if (oldSwitcherEnabled !== newSwitcherEnabled) {
-      console.log(`Switcher enabled status changed from ${oldSwitcherEnabled} to ${newSwitcherEnabled}`)
-      
-      if (newSwitcherEnabled) {
-        // Enable and start the switcher service
-        exe('systemctl --user enable piosk-switcher', (err, stdout, stderr) => {
-          if (err) {
-            console.error('Error enabling switcher service:', stderr)
-          } else {
-            console.log('Switcher service enabled')
-            // Start the service
-            exe('systemctl --user start piosk-switcher', (err, stdout, stderr) => {
-              if (err) {
-                console.error('Error starting switcher service:', stderr)
-              } else {
-                console.log('Switcher service started')
-              }
-            })
-          }
-        })
-      } else {
-        // Stop and disable the switcher service
-        exe('systemctl --user stop piosk-switcher', (err, stdout, stderr) => {
-          if (err) {
-            console.error('Error stopping switcher service:', stderr)
-          } else {
-            console.log('Switcher service stopped')
-            // Disable the service
-            exe('systemctl --user disable piosk-switcher', (err, stdout, stderr) => {
-              if (err) {
-                console.error('Error disabling switcher service:', stderr)
-              } else {
-                console.log('Switcher service disabled')
-              }
-            })
-          }
-        })
-      }
-    }
-
-    res.status(200).send('Settings saved. Please reboot the system to apply changes.')
+    res.status(200).send('Settings saved. The switcher service will be updated on the next login or reboot.')
   })
 })
 
