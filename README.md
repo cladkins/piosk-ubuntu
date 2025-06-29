@@ -153,15 +153,19 @@ PiOSK includes a web-based switcher control interface that allows you to manage 
 3. Or go directly to `http://<your-ubuntu-ip>/switcher.html`
 
 ### Switcher Settings
-- **Enable/Disable**: Turn the switcher on or off completely
+- **Enable/Disable**: Turn the switcher on or off completely (takes effect after clicking Apply Settings and rebooting)
 - **Switch Interval**: Set the time between tab switches (1-300 seconds)
 - **Refresh Cycle**: Configure how often all tabs are refreshed (1-50 cycles)
 
+> **Note:** The "Enable Switcher" toggle only updates the configuration. You must click **Apply Settings** and then **reboot the system manually** for the change to take effect.
+
 ### Switcher Controls
-- **Start**: Manually start the switcher service
-- **Stop**: Manually stop the switcher service
-- **Restart**: Restart the switcher service
-- **Apply Settings**: Save configuration changes (requires reboot)
+- **Start**: Manually start the switcher service (immediate effect)
+- **Stop**: Manually stop the switcher service (immediate effect)
+- **Restart**: Restart the switcher service (immediate effect)
+- **Apply Settings**: Save configuration changes (requires manual reboot)
+
+> **Note:** The dashboard no longer attempts to reboot the system automatically. After applying settings, you will see a message instructing you to reboot manually for changes to take effect.
 
 ### Configuration
 Switcher settings are stored in `/opt/piosk/config.json`:
