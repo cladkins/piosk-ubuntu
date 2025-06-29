@@ -24,6 +24,34 @@ get_tabs() {
     curl -s http://localhost:9222/json/list | jq -r '.[] | select(.type == "page") | .id'
 }
 
+# Function to get list of URLs from config
+get_urls_from_config() {
+    jq -r '.urls[]' "$CONFIG_FILE"
+}
+
+# Function to get current URL
+get_current_url() {
+    local tabs=($(get_tabs))
+    local current_index=$CURRENT_TAB_INDEX
+    local tab_id="${tabs[$current_index]}"
+    curl -s http://localhost:9222/json/list | jq -r ".[] | select(.id == \"$tab_id\") | .url"
+}
+
+# Function to find tab index by URL
+find_tab_index_by_url() {
+    local target_url="$1"
+    local tabs=($(get_tabs))
+    
+    for i in "${!tabs[@]}"; do
+        local tab_url=$(curl -s http://localhost:9222/json/list | jq -r ".[] | select(.id == \"${tabs[$i]}\") | .url")
+        if [[ "$tab_url" == "$target_url" ]]; then
+            echo $i
+            return
+        fi
+    done
+    echo -1
+}
+
 # Function to show all tabs for debugging
 show_all_tabs() {
     echo "=== All Available Tabs ==="
@@ -68,32 +96,63 @@ get_current_tab_index() {
     echo $CURRENT_TAB_INDEX
 }
 
-# Function to switch to next tab
-switch_to_next_tab() {
+# Function to switch to next URL
+switch_to_next_url() {
+    local urls=($(get_urls_from_config))
+    local current_url=$(get_current_url)
+    local current_url_index=-1
+    
+    # Find current URL in the config list
+    for i in "${!urls[@]}"; do
+        if [[ "${urls[$i]}" == "$current_url" ]]; then
+            current_url_index=$i
+            break
+        fi
+    done
+    
+    # If current URL not found, start from beginning
+    if [ $current_url_index -eq -1 ]; then
+        current_url_index=0
+    fi
+    
+    # Calculate next URL index
+    local next_url_index=$(( (current_url_index + 1) % ${#urls[@]} ))
+    local next_url="${urls[$next_url_index]}"
+    
+    echo "Current URL: $current_url (index: $current_url_index)"
+    echo "Switching to URL: $next_url (index: $next_url_index)"
+    
+    # Find the tab with the next URL
+    local target_tab_index=$(find_tab_index_by_url "$next_url")
+    
+    if [ $target_tab_index -eq -1 ]; then
+        echo "ERROR: Could not find tab with URL: $next_url"
+        return 1
+    fi
+    
     local tabs=($(get_tabs))
-    local current_index=$(get_current_tab_index)
-    local next_index=$(( (current_index + 1) % ${#tabs[@]} ))
+    local target_tab_id="${tabs[$target_tab_index]}"
     
-    echo "Switching from tab $current_index to tab $next_index (total tabs: ${#tabs[@]})"
-    echo "Current tab ID: ${tabs[$current_index]}"
-    echo "Next tab ID: ${tabs[$next_index]}"
+    echo "Found target tab at index $target_tab_index (ID: $target_tab_id)"
     
-    activate_tab "${tabs[$next_index]}"
-    CURRENT_TAB_INDEX=$next_index
+    # Switch to the target tab
+    activate_tab "$target_tab_id"
+    CURRENT_TAB_INDEX=$target_tab_index
     
     # Small delay to ensure switch completes
     sleep 0.5
     
-    echo "Tab switch successful - now on tab $next_index"
+    echo "Tab switch successful - now on tab $target_tab_index with URL: $next_url"
     return 0
 }
 
 # Function to refresh current tab
 refresh_current_tab() {
     local tabs=($(get_tabs))
-    local current_index=$(get_current_tab_index)
+    local current_index=$CURRENT_TAB_INDEX
     local tab_id="${tabs[$current_index]}"
-    echo "Refreshing current tab $current_index (ID: $tab_id)"
+    local current_url=$(get_current_url)
+    echo "Refreshing current tab $current_index (ID: $tab_id, URL: $current_url)"
     reload_tab "$tab_id"
 }
 
@@ -118,9 +177,9 @@ for ((TURN=1; TURN<=$((SWITCHER_REFRESH_CYCLE*URLS)); TURN++)) do
         show_all_tabs
     fi
     
-    # Switch to next tab
-    if ! switch_to_next_tab; then
-        echo "ERROR: Failed to switch tab, exiting"
+    # Switch to next URL
+    if ! switch_to_next_url; then
+        echo "ERROR: Failed to switch URL, exiting"
         exit 1
     fi
     
