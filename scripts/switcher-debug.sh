@@ -26,7 +26,7 @@ get_tabs() {
 
 # Function to get list of URLs from config
 get_urls_from_config() {
-    jq -r '.urls[]' "$CONFIG_FILE"
+    jq -r '.urls[].url' "$CONFIG_FILE"
 }
 
 # Function to get current URL
