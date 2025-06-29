@@ -1,10 +1,10 @@
 [Unit]
-Description=Run PiOSK dashboard
+Description=Run PiOSK dashboard (Node.js direct)
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/npm start --prefix /opt/piosk/
+ExecStart=/usr/bin/node /opt/piosk/index.js
 User=USER_PLACEHOLDER
 WorkingDirectory=/opt/piosk
 Restart=on-failure
@@ -13,4 +13,4 @@ Environment=NODE_ENV=production
 Environment=HOME=/home/USER_PLACEHOLDER
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target 

@@ -215,6 +215,16 @@ sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-switcher.se
 # Reload systemd
 systemctl daemon-reload
 
+# Enable and start the dashboard service
+echo "Enabling and starting PiOSK dashboard service..."
+systemctl enable piosk-dashboard
+if systemctl start piosk-dashboard; then
+    echo "PiOSK dashboard service started successfully"
+else
+    echo "Warning: Failed to start PiOSK dashboard service automatically"
+    echo "You may need to start it manually: sudo systemctl start piosk-dashboard"
+fi
+
 echo "=== Setup Complete ==="
 echo ""
 echo "Autologin configured for user: $ACTUAL_USER"

@@ -159,6 +159,8 @@ sudo /opt/piosk/scripts/cleanup.sh
 5. **Screen still going to sleep**: Run `/opt/piosk/scripts/apply-power-settings.sh` as a regular user
 6. **Power settings not persisting**: Check if the systemd user service is enabled: `systemctl --user status piosk-power-management.service`
 7. **Power management issues**: Test your power settings: `/opt/piosk/scripts/test-power-settings.sh`
+8. **Dashboard not accessible (502 error)**: Check if the dashboard service is running: `sudo systemctl status piosk-dashboard`
+9. **Dashboard service won't start**: Try running manually: `cd /opt/piosk && sudo -u $USER npm start`
 
 ### Service Management
 
