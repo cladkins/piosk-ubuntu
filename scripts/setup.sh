@@ -135,7 +135,7 @@ echo "npm dependencies installed successfully"
 # Install and configure nginx as reverse proxy
 echo "Installing and configuring nginx..."
 apt update
-apt install -y nginx
+apt install -y nginx xdotool
 
 # Create nginx configuration for PiOSK
 cat > /etc/nginx/sites-available/piosk << EOF
