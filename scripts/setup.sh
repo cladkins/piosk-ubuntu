@@ -208,6 +208,7 @@ cp /opt/piosk/services/piosk-runner.template /etc/systemd/system/piosk-runner.se
 
 # Replace placeholders in service files
 sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-dashboard.service
+sed -i "s/USER_SUID/$(id -u $ACTUAL_USER)/g" /etc/systemd/system/piosk-dashboard.service
 sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-runner.service
 
 # Install switcher as user service for proper X11 access

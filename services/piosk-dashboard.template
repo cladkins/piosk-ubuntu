@@ -11,6 +11,8 @@ Restart=on-failure
 RestartSec=10
 Environment=NODE_ENV=production
 Environment=HOME=/home/USER_PLACEHOLDER
+Environment=XDG_RUNTIME_DIR=/run/user/USER_SUID
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/USER_SUID/bus
 
 [Install]
 WantedBy=multi-user.target

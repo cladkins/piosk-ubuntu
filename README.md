@@ -196,23 +196,48 @@ Switcher settings are stored in `/opt/piosk/config.json`:
 
 Check service status:
 ```bash
+# Dashboard service (system service)
 sudo systemctl status piosk-dashboard
+
+# Runner service (system service) 
 sudo systemctl status piosk-runner
-sudo systemctl status nginx
+
+# Switcher service (user service)
+systemctl --user status piosk-switcher
+
+# View switcher logs
+journalctl --user -u piosk-switcher -f
 ```
 
-Restart services:
-```bash
-sudo systemctl restart piosk-dashboard
-sudo systemctl restart piosk-runner
-sudo systemctl restart nginx
-```
+### Switcher Service Issues
 
-View logs:
-```bash
-sudo journalctl -u piosk-dashboard -f
-sudo journalctl -u piosk-runner -f
-```
+If the switcher controls aren't working in the dashboard:
+
+1. **Check if switcher service is running:**
+   ```bash
+   systemctl --user status piosk-switcher
+   ```
+
+2. **Check dashboard service environment:**
+   ```bash
+   sudo systemctl show piosk-dashboard --property=User,Environment
+   ```
+
+3. **Test switcher endpoints directly:**
+   ```bash
+   curl http://localhost:3000/switcher/status
+   ```
+
+4. **Restart dashboard service:**
+   ```bash
+   sudo systemctl restart piosk-dashboard
+   ```
+
+5. **Enable switcher service manually:**
+   ```bash
+   systemctl --user enable piosk-switcher
+   systemctl --user start piosk-switcher
+   ```
 
 ### Manual Display Manager Configuration
 
