@@ -48,12 +48,19 @@ if command -v xdotool >/dev/null 2>&1; then
     echo "All windows:"
     xdotool search --name "" 2>/dev/null | head -5 || echo "No windows found"
     
-    # Try different window name patterns
+    # Try different window name patterns (case insensitive)
     echo "Trying different window name patterns..."
     xdotool search --name "chrome" 2>/dev/null || echo "No 'chrome' windows found"
     xdotool search --name "browser" 2>/dev/null || echo "No 'browser' windows found"
     xdotool search --class "chromium" 2>/dev/null || echo "No 'chromium' class windows found"
     xdotool search --class "chrome" 2>/dev/null || echo "No 'chrome' class windows found"
+    
+    # Try case-insensitive searches
+    echo "Trying case-insensitive searches..."
+    xdotool search --name "CHROMIUM" 2>/dev/null || echo "No 'CHROMIUM' windows found"
+    xdotool search --name "CHROME" 2>/dev/null || echo "No 'CHROME' windows found"
+    xdotool search --class "CHROMIUM" 2>/dev/null || echo "No 'CHROMIUM' class windows found"
+    xdotool search --class "CHROME" 2>/dev/null || echo "No 'CHROME' class windows found"
     
     # List all windows with their titles
     echo "All windows with titles:"
@@ -62,6 +69,11 @@ if command -v xdotool >/dev/null 2>&1; then
         class=$(xdotool getwindowclassname "$window_id" 2>/dev/null || echo "Unknown")
         echo "  Window $window_id: '$title' (class: $class)"
     done
+    
+    # Check if we can see any windows at all
+    echo "Testing basic xdotool functionality..."
+    xdotool getdisplaygeometry 2>/dev/null && echo "Display geometry accessible" || echo "Display geometry not accessible"
+    xdotool getmouselocation 2>/dev/null && echo "Mouse location accessible" || echo "Mouse location not accessible"
 fi
 
 # count the number of URLs, that are configured to cycle through
@@ -98,9 +110,9 @@ send_key() {
     # First, try to focus the Chromium window
     case $KEYBOARD_TOOL in
         "xdotool")
-            # Try different window name patterns
+            # Try different window name patterns (case insensitive)
             local window_found=false
-            local window_patterns=("Chromium" "chrome" "browser" "Google Chrome")
+            local window_patterns=("Chromium" "CHROMIUM" "chrome" "CHROME" "browser" "BROWSER" "Google Chrome")
             
             for pattern in "${window_patterns[@]}"; do
                 echo "Trying to focus window with pattern: $pattern"
@@ -114,11 +126,15 @@ send_key() {
             # If no window found by name, try by class
             if [ "$window_found" = false ]; then
                 echo "Trying to focus window by class..."
-                if xdotool search --class "chromium" windowactivate 2>/dev/null || \
-                   xdotool search --class "chrome" windowactivate 2>/dev/null; then
-                    echo "Successfully focused window by class"
-                    window_found=true
-                fi
+                local class_patterns=("chromium" "CHROMIUM" "chrome" "CHROME")
+                for class in "${class_patterns[@]}"; do
+                    echo "Trying to focus window by class: $class"
+                    if xdotool search --class "$class" windowactivate 2>/dev/null; then
+                        echo "Successfully focused window by class: $class"
+                        window_found=true
+                        break
+                    fi
+                done
             fi
             
             if [ "$window_found" = false ]; then
