@@ -44,7 +44,8 @@ find_tab_index_by_url() {
     
     for i in "${!tabs[@]}"; do
         local tab_url=$(curl -s http://localhost:9222/json/list | jq -r ".[] | select(.id == \"${tabs[$i]}\") | .url")
-        if [[ "$tab_url" == "$target_url" ]]; then
+        # Check if target URL is contained within the tab URL (for partial matches)
+        if [[ "$tab_url" == *"$target_url"* ]] || [[ "$target_url" == *"$tab_url"* ]]; then
             echo $i
             return
         fi
@@ -102,9 +103,9 @@ switch_to_next_url() {
     local current_url=$(get_current_url)
     local current_url_index=-1
     
-    # Find current URL in the config list
+    # Find current URL in the config list (with partial matching)
     for i in "${!urls[@]}"; do
-        if [[ "${urls[$i]}" == "$current_url" ]]; then
+        if [[ "$current_url" == *"${urls[$i]}"* ]] || [[ "${urls[$i]}" == *"$current_url"* ]]; then
             current_url_index=$i
             break
         fi
