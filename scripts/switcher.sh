@@ -54,6 +54,14 @@ if command -v xdotool >/dev/null 2>&1; then
     xdotool search --name "browser" 2>/dev/null || echo "No 'browser' windows found"
     xdotool search --class "chromium" 2>/dev/null || echo "No 'chromium' class windows found"
     xdotool search --class "chrome" 2>/dev/null || echo "No 'chrome' class windows found"
+    
+    # List all windows with their titles
+    echo "All windows with titles:"
+    xdotool search --name "" 2>/dev/null | while read window_id; do
+        title=$(xdotool getwindowname "$window_id" 2>/dev/null || echo "Unknown")
+        class=$(xdotool getwindowclassname "$window_id" 2>/dev/null || echo "Unknown")
+        echo "  Window $window_id: '$title' (class: $class)"
+    done
 fi
 
 # count the number of URLs, that are configured to cycle through
