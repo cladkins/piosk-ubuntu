@@ -63,10 +63,18 @@ let switcher = {
     } else if (data.status === 'inactive') {
       statusBadge.className = 'badge bg-danger me-2';
       statusBadge.textContent = 'Inactive';
-      statusText.textContent = 'Switcher is stopped';
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      restartBtn.disabled = false;
+      
+      if (data.reason === 'disabled_in_config') {
+        statusText.textContent = 'Switcher is disabled in configuration';
+        startBtn.disabled = true;
+        stopBtn.disabled = true;
+        restartBtn.disabled = true;
+      } else {
+        statusText.textContent = 'Switcher is stopped';
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        restartBtn.disabled = false;
+      }
     } else {
       statusBadge.className = 'badge bg-secondary me-2';
       statusBadge.textContent = 'Unknown';
@@ -181,8 +189,13 @@ let switcher = {
     })
       .then(response => {
         if (response.ok) {
-          this.showAlert('Settings applied successfully. System will reboot to apply changes.', 'success');
+          const message = enabled ? 
+            'Settings applied successfully. Switcher service has been enabled and started.' :
+            'Settings applied successfully. Switcher service has been stopped and disabled.';
+          this.showAlert(message, 'success');
           this.updateConfigDisplay();
+          // Reload status after a short delay to reflect the changes
+          setTimeout(() => this.loadStatus(), 1000);
         } else {
           return response.text().then(text => {
             throw new Error(text);
