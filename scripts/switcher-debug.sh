@@ -37,6 +37,13 @@ get_current_url() {
     curl -s http://localhost:9222/json/list | jq -r ".[] | select(.id == \"$tab_id\") | .url"
 }
 
+# Function to extract domain from URL
+extract_domain() {
+    local url="$1"
+    # Remove protocol and path, keep only domain
+    echo "$url" | sed -E 's|^https?://||' | sed -E 's|^www\.||' | sed -E 's|/.*$||'
+}
+
 # Function to find tab index by URL
 find_tab_index_by_url() {
     local target_url="$1"
@@ -44,8 +51,17 @@ find_tab_index_by_url() {
     
     for i in "${!tabs[@]}"; do
         local tab_url=$(curl -s http://localhost:9222/json/list | jq -r ".[] | select(.id == \"${tabs[$i]}\") | .url")
+        
         # Check if target URL is contained within the tab URL (for partial matches)
         if [[ "$tab_url" == *"$target_url"* ]] || [[ "$target_url" == *"$tab_url"* ]]; then
+            echo $i
+            return
+        fi
+        
+        # Also check domain matching (for cases like windy.com vs www.windy.com)
+        local target_domain=$(extract_domain "$target_url")
+        local tab_domain=$(extract_domain "$tab_url")
+        if [[ "$target_domain" == "$tab_domain" ]]; then
             echo $i
             return
         fi
@@ -103,9 +119,18 @@ switch_to_next_url() {
     local current_url=$(get_current_url)
     local current_url_index=-1
     
-    # Find current URL in the config list (with partial matching)
+    # Find current URL in the config list (with partial matching and domain matching)
     for i in "${!urls[@]}"; do
+        # Check partial URL matching
         if [[ "$current_url" == *"${urls[$i]}"* ]] || [[ "${urls[$i]}" == *"$current_url"* ]]; then
+            current_url_index=$i
+            break
+        fi
+        
+        # Also check domain matching
+        local current_domain=$(extract_domain "$current_url")
+        local config_domain=$(extract_domain "${urls[$i]}")
+        if [[ "$current_domain" == "$config_domain" ]]; then
             current_url_index=$i
             break
         fi
