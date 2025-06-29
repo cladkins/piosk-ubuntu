@@ -53,6 +53,15 @@ get_tabs() {
     curl -s http://localhost:9222/json/list | jq -r '.[] | select(.type == "page") | .id'
 }
 
+# Function to show all tabs for debugging
+show_all_tabs() {
+    echo "=== All Available Tabs ==="
+    curl -s http://localhost:9222/json/list | jq -r '.[] | select(.type == "page") | "ID: \(.id) | URL: \(.url)"'
+    echo "=== Current Active Tab ==="
+    curl -s http://localhost:9222/json/active | jq -r '"ID: \(.id) | URL: \(.url)"'
+    echo "========================"
+}
+
 # Function to activate a tab
 activate_tab() {
     local tab_id="$1"
@@ -88,8 +97,22 @@ switch_to_next_tab() {
     local current_index=$(get_current_tab_index)
     local next_index=$(( (current_index + 1) % ${#tabs[@]} ))
     
-    echo "Switching from tab $current_index to tab $next_index"
+    echo "Switching from tab $current_index to tab $next_index (total tabs: ${#tabs[@]})"
+    echo "Current tab ID: $(curl -s http://localhost:9222/json/active | jq -r '.id')"
+    echo "Next tab ID: ${tabs[$next_index]}"
+    
     activate_tab "${tabs[$next_index]}"
+    
+    # Verify the switch worked
+    sleep 1
+    local new_current_id=$(curl -s http://localhost:9222/json/active | jq -r '.id')
+    if [[ "$new_current_id" == "${tabs[$next_index]}" ]]; then
+        echo "Tab switch successful"
+        return 0
+    else
+        echo "Tab switch failed - expected ${tabs[$next_index]}, got $new_current_id"
+        return 1
+    fi
 }
 
 # Function to refresh current tab
@@ -117,6 +140,11 @@ done
 for ((TURN=1; TURN<=$((SWITCHER_REFRESH_CYCLE*URLS)); TURN++)) do
   if [ $TURN -le $((SWITCHER_REFRESH_CYCLE*URLS)) ]; then
     echo "Switching to next tab (turn $TURN)"
+    
+    # Show debug info every few turns
+    if [ $((TURN % 5)) -eq 1 ]; then
+        show_all_tabs
+    fi
     
     # Switch to next tab
     if ! switch_to_next_tab; then
