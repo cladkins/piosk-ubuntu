@@ -130,12 +130,6 @@ The power management configuration works with:
 If you need to apply power settings manually:
 
 ```bash
-# Apply power settings immediately (run as regular user)
-/opt/piosk/scripts/apply-power-settings.sh
-
-# Test if power settings are applied correctly
-/opt/piosk/scripts/test-power-settings.sh
-
 # Check current power management status
 gsettings get org.gnome.desktop.screensaver idle-activation-enabled
 ```
@@ -156,11 +150,10 @@ sudo /opt/piosk/scripts/cleanup.sh
 2. **Web dashboard not accessible**: Check if nginx is running: `sudo systemctl status nginx`
 3. **Chromium not starting**: Verify display permissions and X11 setup
 4. **Auto-login not working**: Check your display manager configuration
-5. **Screen still going to sleep**: Run `/opt/piosk/scripts/apply-power-settings.sh` as a regular user
+5. **Screen still going to sleep**: Check if power management service is running: `systemctl --user status piosk-power-management.service`
 6. **Power settings not persisting**: Check if the systemd user service is enabled: `systemctl --user status piosk-power-management.service`
-7. **Power management issues**: Test your power settings: `/opt/piosk/scripts/test-power-settings.sh`
-8. **Dashboard not accessible (502 error)**: Check if the dashboard service is running: `sudo systemctl status piosk-dashboard`
-9. **Dashboard service won't start**: Try running manually: `cd /opt/piosk && sudo -u $USER npm start`
+7. **Dashboard not accessible (502 error)**: Check if the dashboard service is running: `sudo systemctl status piosk-dashboard`
+8. **Dashboard service won't start**: Try running manually: `cd /opt/piosk && sudo -u $USER npm start`
 
 ### Service Management
 
