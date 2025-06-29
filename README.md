@@ -20,7 +20,7 @@ This is an **Ubuntu adaptation** of the original [PiOSK project](https://github.
 - **Web Dashboard**: Manage URLs through a web interface
 - **Auto-login**: Configures automatic login for your display manager
 - **Tab Rotation**: Automatically cycles through configured web pages
-- **Switcher Control**: Web interface to control tab switching timing and enable/disable
+- **Switcher Control**: Web interface to control tab switching timing and enable/disable with immediate effect
 - **Systemd Integration**: Runs as system services for reliability
 - **Multiple Display Manager Support**: Works with GDM3, LightDM, and SDDM
 - **Nginx Reverse Proxy**: Secure web interface on port 80
@@ -153,19 +153,21 @@ PiOSK includes a web-based switcher control interface that allows you to manage 
 3. Or go directly to `http://<your-ubuntu-ip>/switcher.html`
 
 ### Switcher Settings
-- **Enable/Disable**: Turn the switcher on or off completely (takes effect after clicking Apply Settings and rebooting)
+- **Enable/Disable**: Turn the switcher on or off completely. When disabled, the switcher service will be stopped and disabled. When enabled, the service will be started and enabled to run automatically.
 - **Switch Interval**: Set the time between tab switches (1-300 seconds)
 - **Refresh Cycle**: Configure how often all tabs are refreshed (1-50 cycles)
 
-> **Note:** The "Enable Switcher" toggle only updates the configuration. You must click **Apply Settings** and then **reboot the system manually** for the change to take effect.
-
 ### Switcher Controls
-- **Start**: Manually start the switcher service (immediate effect)
+- **Start**: Manually start the switcher service (only available when switcher is enabled in configuration)
 - **Stop**: Manually stop the switcher service (immediate effect)
-- **Restart**: Restart the switcher service (immediate effect)
-- **Apply Settings**: Save configuration changes (requires manual reboot)
+- **Restart**: Restart the switcher service (only available when switcher is enabled in configuration)
+- **Apply Settings**: Save configuration changes and automatically enable/disable the switcher service
 
-> **Note:** The dashboard no longer attempts to reboot the system automatically. After applying settings, you will see a message instructing you to reboot manually for changes to take effect.
+### How Enable/Disable Works
+- **When you enable the switcher**: The systemd service is automatically enabled and started
+- **When you disable the switcher**: The systemd service is automatically stopped and disabled
+- **Status feedback**: The interface shows whether the switcher is "Active", "Inactive - Switcher is disabled in configuration", or "Inactive - Switcher is stopped"
+- **Button states**: Start/restart buttons are disabled when the switcher is disabled in configuration
 
 ### Configuration
 Switcher settings are stored in `/opt/piosk/config.json`:
@@ -222,26 +224,36 @@ If the switcher controls aren't working in the dashboard:
    systemctl --user status piosk-switcher
    ```
 
-2. **Check dashboard service environment:**
+2. **Check if switcher is enabled in configuration:**
+   ```bash
+   cat /opt/piosk/config.json | jq '.switcher.enabled'
+   ```
+
+3. **Check dashboard service environment:**
    ```bash
    sudo systemctl show piosk-dashboard --property=User,Environment
    ```
 
-3. **Test switcher endpoints directly:**
+4. **Test switcher endpoints directly:**
    ```bash
    curl http://localhost:3000/switcher/status
    ```
 
-4. **Restart dashboard service:**
+5. **Restart dashboard service:**
    ```bash
    sudo systemctl restart piosk-dashboard
    ```
 
-5. **Enable switcher service manually:**
+6. **Enable switcher service manually:**
    ```bash
    systemctl --user enable piosk-switcher
    systemctl --user start piosk-switcher
    ```
+
+7. **If switcher is disabled in config but you want to enable it:**
+   - Use the web interface to toggle the "Enable Switcher" checkbox
+   - Click "Apply Settings"
+   - The service should automatically start
 
 ### Manual Display Manager Configuration
 
