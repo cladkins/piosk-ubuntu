@@ -176,6 +176,7 @@ Comment=PiOSK Kiosk Mode
 Exec=/opt/piosk/scripts/runner.sh
 Terminal=false
 X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=10
 EOF
 
 chown $ACTUAL_USER:$ACTUAL_USER /home/$ACTUAL_USER/.config/autostart/piosk-kiosk.desktop
