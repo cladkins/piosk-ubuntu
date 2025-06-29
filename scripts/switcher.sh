@@ -37,6 +37,8 @@ fi
 
 echo "Starting PiOSK switcher with interval: ${SWITCHER_INTERVAL}s, refresh cycle: ${SWITCHER_REFRESH_CYCLE}"
 echo "Using display: $DISPLAY"
+echo "Running as user: $(whoami)"
+echo "User ID: $(id -u)"
 
 # Debug: Check display and window status
 echo "Checking display and window status..."
@@ -45,6 +47,13 @@ if command -v xdotool >/dev/null 2>&1; then
     xdotool search --name "Chromium" 2>/dev/null || echo "No Chromium windows found"
     echo "All windows:"
     xdotool search --name "" 2>/dev/null | head -5 || echo "No windows found"
+    
+    # Try different window name patterns
+    echo "Trying different window name patterns..."
+    xdotool search --name "chrome" 2>/dev/null || echo "No 'chrome' windows found"
+    xdotool search --name "browser" 2>/dev/null || echo "No 'browser' windows found"
+    xdotool search --class "chromium" 2>/dev/null || echo "No 'chromium' class windows found"
+    xdotool search --class "chrome" 2>/dev/null || echo "No 'chrome' class windows found"
 fi
 
 # count the number of URLs, that are configured to cycle through
@@ -81,11 +90,34 @@ send_key() {
     # First, try to focus the Chromium window
     case $KEYBOARD_TOOL in
         "xdotool")
-            # Focus Chromium window first
-            xdotool search --name "Chromium" windowactivate 2>/dev/null || {
-                echo "Failed to focus Chromium window"
+            # Try different window name patterns
+            local window_found=false
+            local window_patterns=("Chromium" "chrome" "browser" "Google Chrome")
+            
+            for pattern in "${window_patterns[@]}"; do
+                echo "Trying to focus window with pattern: $pattern"
+                if xdotool search --name "$pattern" windowactivate 2>/dev/null; then
+                    echo "Successfully focused window with pattern: $pattern"
+                    window_found=true
+                    break
+                fi
+            done
+            
+            # If no window found by name, try by class
+            if [ "$window_found" = false ]; then
+                echo "Trying to focus window by class..."
+                if xdotool search --class "chromium" windowactivate 2>/dev/null || \
+                   xdotool search --class "chrome" windowactivate 2>/dev/null; then
+                    echo "Successfully focused window by class"
+                    window_found=true
+                fi
+            fi
+            
+            if [ "$window_found" = false ]; then
+                echo "Failed to focus any browser window"
                 return 1
-            }
+            fi
+            
             sleep 0.5
             
             # Now send the key

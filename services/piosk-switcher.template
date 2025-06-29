@@ -5,8 +5,10 @@ Wants=display-manager.service
 
 [Service]
 Type=simple
+ExecStartPre=/usr/bin/sleep 30
 ExecStart=/opt/piosk/scripts/switcher.sh
 User=USER_PLACEHOLDER
+Group=USER_PLACEHOLDER
 WorkingDirectory=/home/USER_PLACEHOLDER
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=/home/USER_PLACEHOLDER/.Xauthority
