@@ -81,27 +81,17 @@ app.post('/config', (req, res) => {
 
 // Switcher control endpoints
 app.get('/switcher/status', (req, res) => {
-  // First check if switcher is enabled in configuration
-  let configEnabled = true
-  try {
-    if (nfs.existsSync('./config.json')) {
-      const config = JSON.parse(nfs.readFileSync('./config.json', 'utf8'))
-      configEnabled = config.switcher?.enabled !== false
-    }
-  } catch (err) {
-    console.error('Error reading config for status:', err)
-  }
-
-  // If switcher is disabled in config, return inactive status
-  if (!configEnabled) {
-    res.json({ status: 'inactive', reason: 'disabled_in_config' })
-    return
-  }
-
-  // Check service status
+  // Check if switcher service is enabled and running
   exe('systemctl --user is-active piosk-switcher', (err, stdout, stderr) => {
     if (err) {
-      res.json({ status: 'inactive', reason: 'service_not_running', error: stderr })
+      // Service is not running, check if it's enabled
+      exe('systemctl --user is-enabled piosk-switcher', (err2, stdout2, stderr2) => {
+        if (err2) {
+          res.json({ status: 'inactive', reason: 'service_disabled' })
+        } else {
+          res.json({ status: 'inactive', reason: 'service_not_running' })
+        }
+      })
     } else {
       res.json({ status: stdout.trim() })
     }
@@ -109,22 +99,6 @@ app.get('/switcher/status', (req, res) => {
 })
 
 app.post('/switcher/start', (req, res) => {
-  // Check if switcher is enabled in configuration
-  let configEnabled = true
-  try {
-    if (nfs.existsSync('./config.json')) {
-      const config = JSON.parse(nfs.readFileSync('./config.json', 'utf8'))
-      configEnabled = config.switcher?.enabled !== false
-    }
-  } catch (err) {
-    console.error('Error reading config for start:', err)
-  }
-
-  if (!configEnabled) {
-    res.status(400).json({ error: 'Switcher is disabled in configuration. Enable it first in the configuration.' })
-    return
-  }
-
   exe('systemctl --user start piosk-switcher', (err, stdout, stderr) => {
     if (err) {
       res.status(500).json({ error: 'Failed to start switcher', details: stderr })
@@ -145,22 +119,6 @@ app.post('/switcher/stop', (req, res) => {
 })
 
 app.post('/switcher/restart', (req, res) => {
-  // Check if switcher is enabled in configuration
-  let configEnabled = true
-  try {
-    if (nfs.existsSync('./config.json')) {
-      const config = JSON.parse(nfs.readFileSync('./config.json', 'utf8'))
-      configEnabled = config.switcher?.enabled !== false
-    }
-  } catch (err) {
-    console.error('Error reading config for restart:', err)
-  }
-
-  if (!configEnabled) {
-    res.status(400).json({ error: 'Switcher is disabled in configuration. Enable it first in the configuration.' })
-    return
-  }
-
   exe('systemctl --user restart piosk-switcher', (err, stdout, stderr) => {
     if (err) {
       res.status(500).json({ error: 'Failed to restart switcher', details: stderr })

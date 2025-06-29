@@ -64,8 +64,8 @@ let switcher = {
       statusBadge.className = 'badge bg-danger me-2';
       statusBadge.textContent = 'Inactive';
       
-      if (data.reason === 'disabled_in_config') {
-        statusText.textContent = 'Switcher is disabled in configuration';
+      if (data.reason === 'service_disabled') {
+        statusText.textContent = 'Switcher service is disabled';
         startBtn.disabled = true;
         stopBtn.disabled = true;
         restartBtn.disabled = true;
