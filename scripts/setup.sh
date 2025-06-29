@@ -222,9 +222,17 @@ sed -i "s/USER_SUID/$(id -u $ACTUAL_USER)/g" /home/$ACTUAL_USER/.config/systemd/
 # Set proper ownership
 chown -R $ACTUAL_USER:$ACTUAL_USER /home/$ACTUAL_USER/.config/systemd
 
+# Try to enable the user service, but don't fail if user session isn't available
+echo "Enabling PiOSK switcher service as user service..."
+if sudo -u $ACTUAL_USER systemctl --user enable piosk-switcher 2>/dev/null; then
+    echo "User service enabled successfully"
+else
+    echo "Warning: Could not enable user service (user session may not be active)"
+    echo "The service will be enabled automatically when you log in to the desktop"
+fi
+
 # Reload systemd
 systemctl daemon-reload
-systemctl --user daemon-reload
 
 # Enable and start the dashboard service
 echo "Enabling and starting PiOSK dashboard service..."
@@ -235,11 +243,6 @@ else
     echo "Warning: Failed to start PiOSK dashboard service automatically"
     echo "You may need to start it manually: sudo systemctl start piosk-dashboard"
 fi
-
-# Enable the switcher service as user service (will start after runner)
-echo "Enabling PiOSK switcher service as user service..."
-sudo -u $ACTUAL_USER systemctl --user enable piosk-switcher
-echo "Note: Switcher service will start automatically when kiosk mode is active"
 
 echo "=== Setup Complete ==="
 echo ""
@@ -252,11 +255,16 @@ echo ""
 echo "To start PiOSK manually:"
 echo "  /opt/piosk/scripts/runner.sh"
 echo ""
+echo "To enable the switcher service (after logging in to desktop):"
+echo "  systemctl --user enable piosk-switcher"
+echo "  systemctl --user start piosk-switcher"
+echo ""
 echo "To disable autostart:"
 echo "  rm ~/.config/autostart/piosk-kiosk.desktop"
 echo ""
 echo "To view logs (if using systemd service):"
 echo "  sudo journalctl -u piosk-runner -f"
+echo "  journalctl --user -u piosk-switcher -f"
 echo ""
 echo "To switch to dashboard mode:"
 echo "  sudo systemctl start piosk-dashboard"
