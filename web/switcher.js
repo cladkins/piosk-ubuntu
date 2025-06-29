@@ -25,9 +25,14 @@ let switcher = {
   
   // Load switcher status
   loadStatus() {
+    console.log('Loading switcher status...');
     fetch('/switcher/status')
-      .then(response => response.json())
+      .then(response => {
+        console.log('Status response status:', response.status);
+        return response.json();
+      })
       .then(data => {
+        console.log('Status data received:', data);
         this.updateStatus(data);
       })
       .catch(error => {
@@ -47,13 +52,17 @@ let switcher = {
   
   // Update status display
   updateStatus(data) {
+    console.log('Updating status with data:', data);
     const statusBadge = document.getElementById('status-badge');
     const statusText = document.getElementById('status-text');
     const startBtn = document.getElementById('start-btn');
     const stopBtn = document.getElementById('stop-btn');
     const restartBtn = document.getElementById('restart-btn');
     
+    console.log('Status value:', data.status);
+    
     if (data.status === 'active') {
+      console.log('Setting status to active');
       statusBadge.className = 'badge bg-success me-2';
       statusBadge.textContent = 'Active';
       statusText.textContent = 'Switcher is running';
@@ -61,6 +70,7 @@ let switcher = {
       stopBtn.disabled = false;
       restartBtn.disabled = false;
     } else if (data.status === 'inactive') {
+      console.log('Setting status to inactive');
       statusBadge.className = 'badge bg-danger me-2';
       statusBadge.textContent = 'Inactive';
       statusText.textContent = 'Switcher is stopped';
@@ -68,9 +78,10 @@ let switcher = {
       stopBtn.disabled = true;
       restartBtn.disabled = false;
     } else {
+      console.log('Setting status to unknown:', data.status);
       statusBadge.className = 'badge bg-secondary me-2';
       statusBadge.textContent = 'Unknown';
-      statusText.textContent = 'Unable to determine status';
+      statusText.textContent = `Unable to determine status (${data.status})`;
       startBtn.disabled = false;
       stopBtn.disabled = false;
       restartBtn.disabled = false;
