@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# PiOSK Tab Switcher - Simple Keyboard-Based Approach
+# Based on the original PiOSK implementation which uses Ctrl+Tab to cycle through tabs
+
 # Get the user ID dynamically
 PI_SUID=$(id -u)
 export XDG_RUNTIME_DIR=/run/user/$PI_SUID
@@ -92,7 +95,7 @@ for ((TURN=1; TURN<=$((SWITCHER_REFRESH_CYCLE*URLS)); TURN++)) do
   if [ $TURN -le $((SWITCHER_REFRESH_CYCLE*URLS)) ]; then
     echo "Switching to next tab (turn $TURN)"
     
-    # Send Ctrl+Tab
+    # Send Ctrl+Tab to cycle to next tab
     if ! send_key "ctrl+Tab"; then
         echo "ERROR: Failed to send Ctrl+Tab, exiting"
         exit 1
@@ -101,7 +104,7 @@ for ((TURN=1; TURN<=$((SWITCHER_REFRESH_CYCLE*URLS)); TURN++)) do
     if [ $TURN -gt $(((SWITCHER_REFRESH_CYCLE-1)*URLS)) ]; then
       echo "Refreshing current tab"
       
-      # Send Ctrl+R
+      # Send Ctrl+R to refresh current tab
       if ! send_key "ctrl+r"; then
           echo "ERROR: Failed to send Ctrl+R"
       fi

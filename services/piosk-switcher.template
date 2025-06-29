@@ -5,7 +5,7 @@ Wants=display-manager.service
 
 [Service]
 Type=simple
-ExecStart=/opt/piosk/scripts/switcher-debug.sh
+ExecStart=/opt/piosk/scripts/switcher.sh
 User=USER_PLACEHOLDER
 WorkingDirectory=/home/USER_PLACEHOLDER
 Environment=DISPLAY=:0
