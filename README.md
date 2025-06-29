@@ -24,6 +24,7 @@ This is an **Ubuntu adaptation** of the original [PiOSK project](https://github.
 - **Multiple Display Manager Support**: Works with GDM3, LightDM, and SDDM
 - **Nginx Reverse Proxy**: Secure web interface on port 80
 - **Snap Chromium Support**: Uses Ubuntu's snap Chromium for better compatibility
+- **Power Management**: Automatically disables screen saver, auto logout, and power management for kiosk mode
 
 ## System Requirements
 
@@ -105,6 +106,47 @@ The setup script automatically detects and configures your display manager:
 3. **Web Dashboard**: Nginx serves the management interface on port 80
 4. **Tab Rotation**: Chromium cycles through configured URLs in kiosk mode
 5. **Configuration**: Changes made through the web interface are saved and applied on reboot
+6. **Power Management**: Screen saver, auto logout, and power management are automatically disabled
+
+## Power Management
+
+PiOSK automatically configures power management settings to ensure the kiosk display remains active:
+
+### What Gets Disabled
+- **Screen Saver**: Prevents the screen from going to sleep
+- **Auto Logout**: Prevents automatic user logout due to inactivity
+- **Display Power Management**: Prevents the display from turning off
+- **System Sleep/Hibernate**: Prevents the system from sleeping
+- **Session Management**: Disables automatic session saving and restoration
+
+### Desktop Environment Support
+The power management configuration works with:
+- **GNOME/Unity**: Uses gsettings to configure power management
+- **KDE Plasma**: Uses dconf to configure powerdevil settings
+- **XFCE**: Uses dconf to configure XFCE power manager
+- **X11 Fallback**: Uses xset for basic screen saver control
+
+### Manual Power Settings
+If you need to apply power settings manually:
+
+```bash
+# Apply power settings immediately (run as regular user)
+/opt/piosk/scripts/apply-power-settings.sh
+
+# Test if power settings are applied correctly
+/opt/piosk/scripts/test-power-settings.sh
+
+# Check current power management status
+gsettings get org.gnome.desktop.screensaver idle-activation-enabled
+```
+
+### Reverting Power Settings
+To restore normal power management behavior:
+
+```bash
+# Remove PiOSK completely (includes power settings)
+sudo /opt/piosk/scripts/cleanup.sh
+```
 
 ## Troubleshooting
 
@@ -114,6 +156,9 @@ The setup script automatically detects and configures your display manager:
 2. **Web dashboard not accessible**: Check if nginx is running: `sudo systemctl status nginx`
 3. **Chromium not starting**: Verify display permissions and X11 setup
 4. **Auto-login not working**: Check your display manager configuration
+5. **Screen still going to sleep**: Run `/opt/piosk/scripts/apply-power-settings.sh` as a regular user
+6. **Power settings not persisting**: Check if the systemd user service is enabled: `systemctl --user status piosk-power-management.service`
+7. **Power management issues**: Test your power settings: `/opt/piosk/scripts/test-power-settings.sh`
 
 ### Service Management
 

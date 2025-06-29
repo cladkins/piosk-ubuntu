@@ -181,6 +181,24 @@ EOF
 chown $ACTUAL_USER:$ACTUAL_USER /home/$ACTUAL_USER/.config/autostart/piosk-kiosk.desktop
 chmod +x /home/$ACTUAL_USER/.config/autostart/piosk-kiosk.desktop
 
+# Configure power management settings to prevent screen saver and auto logout
+echo "Configuring power management settings..."
+mkdir -p /home/$ACTUAL_USER/.config/autostart
+
+# Create a power management configuration script that runs on autostart
+cat > /home/$ACTUAL_USER/.config/autostart/piosk-power-config.desktop << EOF
+[Desktop Entry]
+Type=Application
+Name=PiOSK Power Config
+Comment=Configure power management for kiosk mode
+Exec=/opt/piosk/scripts/power-config.sh
+Terminal=false
+X-GNOME-Autostart-enabled=true
+EOF
+
+chown $ACTUAL_USER:$ACTUAL_USER /home/$ACTUAL_USER/.config/autostart/piosk-power-config.desktop
+chmod +x /home/$ACTUAL_USER/.config/autostart/piosk-power-config.desktop
+
 # Install systemd services (as backup/alternative)
 echo "Installing systemd services..."
 

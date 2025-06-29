@@ -34,6 +34,7 @@ rm -f /etc/systemd/system/piosk-switcher.service
 # Remove autostart entry
 echo "Removing autostart entry..."
 rm -f /home/$ACTUAL_USER/.config/autostart/piosk-kiosk.desktop
+rm -f /home/$ACTUAL_USER/.config/autostart/piosk-power-config.desktop
 
 # Remove nginx configuration
 echo "Removing nginx configuration..."
@@ -59,6 +60,12 @@ rm -rf /opt/piosk
 # Reload systemd
 echo "Reloading systemd..."
 systemctl daemon-reload
+
+# Clean up power management user service
+echo "Cleaning up power management configurations..."
+systemctl --user stop piosk-power-management.service 2>/dev/null || true
+systemctl --user disable piosk-power-management.service 2>/dev/null || true
+rm -f /home/$ACTUAL_USER/.config/systemd/user/piosk-power-management.service
 
 echo "=== Cleanup Complete ==="
 echo ""
