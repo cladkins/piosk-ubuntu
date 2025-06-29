@@ -205,16 +205,26 @@ echo "Installing systemd services..."
 # Copy service templates
 cp /opt/piosk/services/piosk-dashboard.template /etc/systemd/system/piosk-dashboard.service
 cp /opt/piosk/services/piosk-runner.template /etc/systemd/system/piosk-runner.service
-cp /opt/piosk/services/piosk-switcher.template /etc/systemd/system/piosk-switcher.service
 
 # Replace placeholders in service files
 sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-dashboard.service
 sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-runner.service
-sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-switcher.service
-sed -i "s/USER_SUID/$(id -u $ACTUAL_USER)/g" /etc/systemd/system/piosk-switcher.service
+
+# Install switcher as user service for proper X11 access
+echo "Installing switcher as user service..."
+mkdir -p /home/$ACTUAL_USER/.config/systemd/user
+cp /opt/piosk/services/piosk-switcher.template /home/$ACTUAL_USER/.config/systemd/user/piosk-switcher.service
+
+# Replace placeholders in user service file
+sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /home/$ACTUAL_USER/.config/systemd/user/piosk-switcher.service
+sed -i "s/USER_SUID/$(id -u $ACTUAL_USER)/g" /home/$ACTUAL_USER/.config/systemd/user/piosk-switcher.service
+
+# Set proper ownership
+chown -R $ACTUAL_USER:$ACTUAL_USER /home/$ACTUAL_USER/.config/systemd
 
 # Reload systemd
 systemctl daemon-reload
+systemctl --user daemon-reload
 
 # Enable and start the dashboard service
 echo "Enabling and starting PiOSK dashboard service..."
@@ -226,9 +236,9 @@ else
     echo "You may need to start it manually: sudo systemctl start piosk-dashboard"
 fi
 
-# Enable the switcher service (will start after runner)
-echo "Enabling PiOSK switcher service..."
-systemctl enable piosk-switcher
+# Enable the switcher service as user service (will start after runner)
+echo "Enabling PiOSK switcher service as user service..."
+sudo -u $ACTUAL_USER systemctl --user enable piosk-switcher
 echo "Note: Switcher service will start automatically when kiosk mode is active"
 
 echo "=== Setup Complete ==="

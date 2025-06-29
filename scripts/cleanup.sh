@@ -17,19 +17,29 @@ ACTUAL_USER=${SUDO_USER:-$USER}
 echo "Cleaning up PiOSK for user: $ACTUAL_USER"
 
 # Stop and disable services
-echo "Stopping and disabling services..."
+echo "Stopping and disabling PiOSK services..."
+
+# Stop system services
 systemctl stop piosk-dashboard 2>/dev/null || true
 systemctl stop piosk-runner 2>/dev/null || true
-systemctl stop piosk-switcher 2>/dev/null || true
+
+# Stop user service
+systemctl --user stop piosk-switcher 2>/dev/null || true
+
+# Disable system services
 systemctl disable piosk-dashboard 2>/dev/null || true
 systemctl disable piosk-runner 2>/dev/null || true
-systemctl disable piosk-switcher 2>/dev/null || true
+
+# Disable user service
+systemctl --user disable piosk-switcher 2>/dev/null || true
 
 # Remove service files
-echo "Removing service files..."
 rm -f /etc/systemd/system/piosk-dashboard.service
 rm -f /etc/systemd/system/piosk-runner.service
 rm -f /etc/systemd/system/piosk-switcher.service
+
+# Remove user service file
+rm -f ~/.config/systemd/user/piosk-switcher.service
 
 # Remove autostart entry
 echo "Removing autostart entry..."

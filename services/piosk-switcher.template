@@ -1,14 +1,12 @@
 [Unit]
 Description=Launch PiOSK switcher to switch tabs on Ubuntu
-After=piosk-runner.service display-manager.service
-Wants=display-manager.service
+After=piosk-runner.service
+Wants=piosk-runner.service
 
 [Service]
 Type=simple
 ExecStartPre=/usr/bin/sleep 30
 ExecStart=/opt/piosk/scripts/switcher.sh
-User=USER_PLACEHOLDER
-Group=USER_PLACEHOLDER
 WorkingDirectory=/home/USER_PLACEHOLDER
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=/home/USER_PLACEHOLDER/.Xauthority
@@ -19,4 +17,4 @@ Restart=on-failure
 RestartSec=5
 
 [Install]
-WantedBy=graphical.target 
+WantedBy=default.target 
