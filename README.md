@@ -345,4 +345,5 @@ MPL-2.0 - Same license as the original PiOSK project
 
 **Credits**: This project is based on the original [PiOSK](https://github.com/debloper/piosk) by [Soumya Deb](https://github.com/debloper), adapted for Ubuntu systems.
 
-![PiOSK Dashboard Web GUI](assets/dashboard.png)
+![PiOSK Ubuntu Dashboard Web GUI](assets/dashboard.png)
+![PiOSK Ubuntu Switcher Web GUI](assets/Switcher.png)
