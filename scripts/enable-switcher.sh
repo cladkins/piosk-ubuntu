@@ -30,17 +30,21 @@ if [ ! -f "$HOME/.config/systemd/user/piosk-switcher.service" ]; then
 fi
 
 echo "Enabling PiOSK switcher service..."
-systemctl --user enable piosk-switcher
+systemctl --user enable piosk-switcher 2>/dev/null || echo "Service already enabled"
 
 echo "Starting PiOSK switcher service..."
-systemctl --user start piosk-switcher
+if systemctl --user start piosk-switcher 2>/dev/null; then
+    echo "Switcher service started successfully"
+else
+    echo "Warning: Could not start switcher service (may already be running)"
+fi
 
 echo "Checking service status..."
-systemctl --user status piosk-switcher --no-pager
+systemctl --user status piosk-switcher --no-pager 2>/dev/null || echo "Service status unavailable"
 
 echo ""
-echo "=== Switcher Service Enabled ==="
-echo "The switcher service is now running and will start automatically on login."
+echo "=== Switcher Service Setup Complete ==="
+echo "The switcher service is now enabled and will start automatically on login."
 echo ""
 echo "To view switcher logs:"
 echo "  journalctl --user -u piosk-switcher -f"

@@ -222,6 +222,19 @@ sed -i "s/USER_SUID/$(id -u $ACTUAL_USER)/g" /home/$ACTUAL_USER/.config/systemd/
 # Set proper ownership
 chown -R $ACTUAL_USER:$ACTUAL_USER /home/$ACTUAL_USER/.config/systemd
 
+# Create autostart entry to enable switcher service on login
+mkdir -p /home/$ACTUAL_USER/.config/autostart
+cat > /home/$ACTUAL_USER/.config/autostart/piosk-switcher-enable.desktop << EOF
+[Desktop Entry]
+Type=Application
+Name=PiOSK Switcher Enable
+Exec=/opt/piosk/scripts/enable-switcher.sh
+Terminal=false
+X-GNOME-Autostart-enabled=true
+EOF
+
+chown $ACTUAL_USER:$ACTUAL_USER /home/$ACTUAL_USER/.config/autostart/piosk-switcher-enable.desktop
+
 # Try to enable the user service, but don't fail if user session isn't available
 echo "Enabling PiOSK switcher service as user service..."
 if sudo -u $ACTUAL_USER systemctl --user enable piosk-switcher 2>/dev/null; then

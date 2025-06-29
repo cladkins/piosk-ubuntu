@@ -29,7 +29,9 @@ app.post('/config', (req, res) => {
 
 // Switcher control endpoints
 app.get('/switcher/status', (req, res) => {
-  exe('systemctl is-active piosk-switcher', (err, stdout, stderr) => {
+  // Get the current user from the process
+  const user = process.env.SUDO_USER || process.env.USER || 'ubuntu'
+  exe(`sudo -u ${user} systemctl --user is-active piosk-switcher`, (err, stdout, stderr) => {
     if (err) {
       res.json({ status: 'inactive', error: stderr })
     } else {
@@ -39,7 +41,8 @@ app.get('/switcher/status', (req, res) => {
 })
 
 app.post('/switcher/start', (req, res) => {
-  exe('systemctl start piosk-switcher', (err, stdout, stderr) => {
+  const user = process.env.SUDO_USER || process.env.USER || 'ubuntu'
+  exe(`sudo -u ${user} systemctl --user start piosk-switcher`, (err, stdout, stderr) => {
     if (err) {
       res.status(500).json({ error: 'Failed to start switcher', details: stderr })
     } else {
@@ -49,7 +52,8 @@ app.post('/switcher/start', (req, res) => {
 })
 
 app.post('/switcher/stop', (req, res) => {
-  exe('systemctl stop piosk-switcher', (err, stdout, stderr) => {
+  const user = process.env.SUDO_USER || process.env.USER || 'ubuntu'
+  exe(`sudo -u ${user} systemctl --user stop piosk-switcher`, (err, stdout, stderr) => {
     if (err) {
       res.status(500).json({ error: 'Failed to stop switcher', details: stderr })
     } else {
@@ -59,7 +63,8 @@ app.post('/switcher/stop', (req, res) => {
 })
 
 app.post('/switcher/restart', (req, res) => {
-  exe('systemctl restart piosk-switcher', (err, stdout, stderr) => {
+  const user = process.env.SUDO_USER || process.env.USER || 'ubuntu'
+  exe(`sudo -u ${user} systemctl --user restart piosk-switcher`, (err, stdout, stderr) => {
     if (err) {
       res.status(500).json({ error: 'Failed to restart switcher', details: stderr })
     } else {

@@ -77,6 +77,23 @@ systemctl --user stop piosk-power-management.service 2>/dev/null || true
 systemctl --user disable piosk-power-management.service 2>/dev/null || true
 rm -f /home/$ACTUAL_USER/.config/systemd/user/piosk-power-management.service
 
+# Stop and disable user services
+echo "Stopping and disabling user services..."
+if [ -n "$ACTUAL_USER" ]; then
+    # Stop switcher service if running
+    sudo -u $ACTUAL_USER systemctl --user stop piosk-switcher 2>/dev/null || true
+    sudo -u $ACTUAL_USER systemctl --user disable piosk-switcher 2>/dev/null || true
+    
+    # Remove user service files
+    rm -f /home/$ACTUAL_USER/.config/systemd/user/piosk-switcher.service
+    
+    # Remove autostart entries
+    rm -f /home/$ACTUAL_USER/.config/autostart/piosk-switcher-enable.desktop
+    rm -f /home/$ACTUAL_USER/.config/autostart/piosk-kiosk.desktop
+    
+    echo "User services cleaned up"
+fi
+
 echo "=== Cleanup Complete ==="
 echo ""
 echo "PiOSK has been removed from your system."
