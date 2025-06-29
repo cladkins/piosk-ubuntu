@@ -1,4 +1,9 @@
 {
+    "switcher": {
+        "enabled": true,
+        "interval": 10,
+        "refresh_cycle": 10
+    },
     "urls": [
         {
             "url": "https://windy.com/"

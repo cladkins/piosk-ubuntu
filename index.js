@@ -27,4 +27,45 @@ app.post('/config', (req, res) => {
   })
 })
 
+// Switcher control endpoints
+app.get('/switcher/status', (req, res) => {
+  exe('systemctl is-active piosk-switcher', (err, stdout, stderr) => {
+    if (err) {
+      res.json({ status: 'inactive', error: stderr })
+    } else {
+      res.json({ status: stdout.trim() })
+    }
+  })
+})
+
+app.post('/switcher/start', (req, res) => {
+  exe('systemctl start piosk-switcher', (err, stdout, stderr) => {
+    if (err) {
+      res.status(500).json({ error: 'Failed to start switcher', details: stderr })
+    } else {
+      res.json({ message: 'Switcher started successfully' })
+    }
+  })
+})
+
+app.post('/switcher/stop', (req, res) => {
+  exe('systemctl stop piosk-switcher', (err, stdout, stderr) => {
+    if (err) {
+      res.status(500).json({ error: 'Failed to stop switcher', details: stderr })
+    } else {
+      res.json({ message: 'Switcher stopped successfully' })
+    }
+  })
+})
+
+app.post('/switcher/restart', (req, res) => {
+  exe('systemctl restart piosk-switcher', (err, stdout, stderr) => {
+    if (err) {
+      res.status(500).json({ error: 'Failed to restart switcher', details: stderr })
+    } else {
+      res.json({ message: 'Switcher restarted successfully' })
+    }
+  })
+})
+
 app.listen(3000, console.error)

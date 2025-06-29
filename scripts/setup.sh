@@ -211,6 +211,7 @@ cp /opt/piosk/services/piosk-switcher.template /etc/systemd/system/piosk-switche
 sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-dashboard.service
 sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-runner.service
 sed -i "s/USER_PLACEHOLDER/$ACTUAL_USER/g" /etc/systemd/system/piosk-switcher.service
+sed -i "s/USER_SUID/$(id -u $ACTUAL_USER)/g" /etc/systemd/system/piosk-switcher.service
 
 # Reload systemd
 systemctl daemon-reload
@@ -224,6 +225,11 @@ else
     echo "Warning: Failed to start PiOSK dashboard service automatically"
     echo "You may need to start it manually: sudo systemctl start piosk-dashboard"
 fi
+
+# Enable the switcher service (will start after runner)
+echo "Enabling PiOSK switcher service..."
+systemctl enable piosk-switcher
+echo "Note: Switcher service will start automatically when kiosk mode is active"
 
 echo "=== Setup Complete ==="
 echo ""

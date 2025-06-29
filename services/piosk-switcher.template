@@ -6,12 +6,12 @@ Wants=display-manager.service
 [Service]
 Type=simple
 ExecStart=/opt/piosk/scripts/switcher.sh
-User=PI_USER
-WorkingDirectory=PI_HOME
+User=USER_PLACEHOLDER
+WorkingDirectory=/home/USER_PLACEHOLDER
 Environment=DISPLAY=:0
-Environment=XAUTHORITY=PI_HOME/.Xauthority
-Environment=XDG_RUNTIME_DIR=/run/user/PI_SUID
-Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/PI_SUID/bus
+Environment=XAUTHORITY=/home/USER_PLACEHOLDER/.Xauthority
+Environment=XDG_RUNTIME_DIR=/run/user/USER_SUID
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/USER_SUID/bus
 Restart=on-failure
 RestartSec=5
 

@@ -20,6 +20,7 @@ This is an **Ubuntu adaptation** of the original [PiOSK project](https://github.
 - **Web Dashboard**: Manage URLs through a web interface
 - **Auto-login**: Configures automatic login for your display manager
 - **Tab Rotation**: Automatically cycles through configured web pages
+- **Switcher Control**: Web interface to control tab switching timing and enable/disable
 - **Systemd Integration**: Runs as system services for reliability
 - **Multiple Display Manager Support**: Works with GDM3, LightDM, and SDDM
 - **Nginx Reverse Proxy**: Secure web interface on port 80
@@ -142,6 +143,40 @@ To restore normal power management behavior:
 sudo /opt/piosk/scripts/cleanup.sh
 ```
 
+## Switcher Control
+
+PiOSK includes a web-based switcher control interface that allows you to manage tab rotation settings:
+
+### Accessing Switcher Controls
+1. Visit the main dashboard at `http://<your-ubuntu-ip>/`
+2. Click the "Switcher" button in the navigation bar
+3. Or go directly to `http://<your-ubuntu-ip>/switcher.html`
+
+### Switcher Settings
+- **Enable/Disable**: Turn the switcher on or off completely
+- **Switch Interval**: Set the time between tab switches (1-300 seconds)
+- **Refresh Cycle**: Configure how often all tabs are refreshed (1-50 cycles)
+
+### Switcher Controls
+- **Start**: Manually start the switcher service
+- **Stop**: Manually stop the switcher service
+- **Restart**: Restart the switcher service
+- **Apply Settings**: Save configuration changes (requires reboot)
+
+### Configuration
+Switcher settings are stored in `/opt/piosk/config.json`:
+
+```json
+{
+    "switcher": {
+        "enabled": true,
+        "interval": 10,
+        "refresh_cycle": 10
+    },
+    "urls": [...]
+}
+```
+
 ## Troubleshooting
 
 ### Common Issues
@@ -154,6 +189,8 @@ sudo /opt/piosk/scripts/cleanup.sh
 6. **Power settings not persisting**: Check if the systemd user service is enabled: `systemctl --user status piosk-power-management.service`
 7. **Dashboard not accessible (502 error)**: Check if the dashboard service is running: `sudo systemctl status piosk-dashboard`
 8. **Dashboard service won't start**: Try running manually: `cd /opt/piosk && sudo -u $USER npm start`
+9. **Switcher not working**: Check if the switcher service is running: `sudo systemctl status piosk-switcher`
+10. **Tabs not switching**: Verify Chromium is running and switcher service is active
 
 ### Service Management
 
