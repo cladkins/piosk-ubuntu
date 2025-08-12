@@ -3,18 +3,21 @@ const exe = require('child_process').exec
 const nfs = require('fs')
 const path = require('path')
 
+// Use /opt/piosk if it exists (installed system), otherwise use local directory
+const BASE_DIR = nfs.existsSync('/opt/piosk') ? '/opt/piosk' : __dirname;
+
 const app = exp()
 
 app.use(exp.static('web'))
 app.use(exp.json())
 
 app.get('/config', (req, res) => {
-  res.sendFile(path.join(__dirname, 'config.json'))
+  res.sendFile(path.join(BASE_DIR, 'config.json'))
 })
 
 app.post('/config', (req, res) => {
   // Save the new configuration
-  nfs.writeFile(path.join(__dirname, 'config.json'), JSON.stringify(req.body, null, "  "), err => {
+  nfs.writeFile(path.join(BASE_DIR, 'config.json'), JSON.stringify(req.body, null, "  "), err => {
     if (err) {
       console.error(err)
       res.status(500).send('Could not save config.')
@@ -113,7 +116,7 @@ app.post('/single-screen/start', (req, res) => {
   // Stop multi-screen mode first
   exe('pkill -f "chromium.*kiosk" 2>/dev/null || true', (err1) => {
     // Start single-screen mode
-    exe(`${path.join(__dirname, 'scripts', 'runner.sh')} > /tmp/piosk-single.log 2>&1 &`, (err, stdout, stderr) => {
+    exe(`${path.join(BASE_DIR, 'scripts', 'runner.sh')} > /tmp/piosk-single.log 2>&1 &`, (err, stdout, stderr) => {
       if (err) {
         res.status(500).json({ error: 'Failed to start single-screen mode', details: stderr || 'Check /tmp/piosk-single.log for details' })
       } else {

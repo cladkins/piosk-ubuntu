@@ -3,7 +3,9 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const SCREEN_DIR = path.join(__dirname, 'screens');
+// Use /opt/piosk if it exists (installed system), otherwise use local directory
+const BASE_DIR = require('fs').existsSync('/opt/piosk') ? '/opt/piosk' : __dirname;
+const SCREEN_DIR = path.join(BASE_DIR, 'screens');
 
 // Ensure screen directory exists
 if (!fs.existsSync(SCREEN_DIR)) {
@@ -13,7 +15,7 @@ if (!fs.existsSync(SCREEN_DIR)) {
 function addMultiScreenRoutes(app) {
     // Detect displays
     app.get('/multiscreen/detect', (req, res) => {
-        exec(`DISPLAY=:0 ${path.join(__dirname, 'scripts', 'detect-displays.sh')}`, (error, stdout, stderr) => {
+        exec(`DISPLAY=:0 ${path.join(BASE_DIR, 'scripts', 'detect-displays.sh')}`, (error, stdout, stderr) => {
             if (error) {
                 console.error('Display detection error:', error);
                 res.json({ displays: [':0'] }); // fallback
@@ -83,7 +85,7 @@ function addMultiScreenRoutes(app) {
             const urls = config.urls.map(u => u.url).join(' ');
             const port = 9222 + Math.floor(Math.random() * 100);
             
-            const command = `DISPLAY=${display} nohup snap run chromium --kiosk --remote-debugging-port=${port} --user-data-dir=/tmp/piosk-${display} ${urls} > /tmp/piosk-${display}.log 2>&1 & echo $! > /tmp/piosk-${display}.pid`;
+            const command = `DISPLAY=${display} XAUTHORITY=\${XAUTHORITY:-$HOME/.Xauthority} nohup snap run chromium --kiosk --remote-debugging-port=${port} --user-data-dir=/tmp/piosk-${display} --no-sandbox ${urls} > /tmp/piosk-${display}.log 2>&1 & echo $! > /tmp/piosk-${display}.pid`;
             
             exec(command, (error, stdout, stderr) => {
                 if (error) {
@@ -126,7 +128,7 @@ function addMultiScreenRoutes(app) {
         // First stop single-screen mode and switcher to avoid conflicts
         exec('pkill -f "chromium.*kiosk" && systemctl --user stop piosk-switcher 2>/dev/null || true', (error1) => {
             // Now start multi-screen mode
-            exec(path.join(__dirname, 'scripts', 'runner-multiscreen.sh'), (error, stdout, stderr) => {
+            exec(path.join(BASE_DIR, 'scripts', 'runner-multiscreen.sh'), (error, stdout, stderr) => {
                 if (error) {
                     res.status(500).json({ error: 'Failed to start multi-screen mode', details: error.message });
                 } else {

@@ -62,12 +62,17 @@ EOF
     # Get URLs for this screen
     URLS=$(jq -r '.urls | map(.url) | join(" ")' "$SCREEN_CONFIG")
     
-    # Start browser on this display
+    # Start browser on this display with proper X11 authorization
     echo "Starting browser on $DISPLAY_ID with URLs: $URLS"
+    
+    # Set up X11 authorization
+    export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
+    
     DISPLAY="$DISPLAY_ID" nohup snap run chromium \
         --kiosk \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
+        --no-sandbox \
         $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     
     # Save PID for later management
