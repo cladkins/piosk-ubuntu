@@ -60,6 +60,5 @@ exec sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium 
   --disable-default-apps \
   --no-first-run \
   --disable-session-crashed-bubble \
-  --disable-infobars \
   --remote-debugging-port=9222 \
   "$URLS"

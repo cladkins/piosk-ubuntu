@@ -138,8 +138,8 @@ EOF
         # Force fullscreen for this specific window - simple approach
         echo "$(date): Forcing fullscreen for $DISPLAY_ID (PID: $CHROMIUM_PID)"
         
-        # Wait a bit longer for window to be fully ready
-        sleep 2
+        # Wait longer for window to be fully ready after adding restore flag
+        sleep 3
         
         # Find and activate this specific window
         WINDOW_ID=$(sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --pid $CHROMIUM_PID 2>/dev/null | head -1)
