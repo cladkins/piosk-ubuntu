@@ -85,7 +85,7 @@ function addMultiScreenRoutes(app) {
             const urls = config.urls.map(u => u.url).join(' ');
             const port = 9222 + Math.floor(Math.random() * 100);
             
-            const command = `DISPLAY=${display} XAUTHORITY=\${XAUTHORITY:-$HOME/.Xauthority} nohup snap run chromium --start-fullscreen --start-maximized --kiosk --disable-infobars --disable-extensions --disable-plugins --disable-translate --disable-default-apps --disable-notifications --disable-popup-blocking --disable-prompt-on-repost --disable-hang-monitor --disable-features=TranslateUI --disable-ipc-flooding-protection --no-first-run --no-default-browser-check --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-features=VizDisplayCompositor --autoplay-policy=no-user-gesture-required --remote-debugging-port=${port} --user-data-dir=/tmp/piosk-${display} ${urls} > /tmp/piosk-${display}.log 2>&1 & echo $! > /tmp/piosk-${display}.pid`;
+            const command = `DISPLAY=${display} XAUTHORITY=\${XAUTHORITY:-$HOME/.Xauthority} nohup snap run chromium --kiosk --start-fullscreen --no-first-run --disable-infobars --disable-notifications --disable-default-apps --remote-debugging-port=${port} --user-data-dir=/tmp/piosk-${display} ${urls} > /tmp/piosk-${display}.log 2>&1 & echo $! > /tmp/piosk-${display}.pid`;
             
             exec(command, (error, stdout, stderr) => {
                 if (error) {
