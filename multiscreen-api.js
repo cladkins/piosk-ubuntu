@@ -132,6 +132,9 @@ function addMultiScreenRoutes(app) {
         console.log(`${new Date().toISOString()}: Script path: ${scriptPath}`);
         console.log(`${new Date().toISOString()}: Script exists: ${require('fs').existsSync(scriptPath)}`);
         
+        // Save the current mode state
+        fs.writeFile(path.join(BASE_DIR, 'last-mode.txt'), 'multi-screen', () => {})
+        
         // First stop single-screen mode and switcher to avoid conflicts
         exec('pkill -f "chromium.*kiosk" && systemctl --user stop piosk-switcher 2>/dev/null || true', (error1) => {
             console.log(`${new Date().toISOString()}: Cleanup completed, starting multi-screen script`);

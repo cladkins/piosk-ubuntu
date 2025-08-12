@@ -173,7 +173,7 @@ cat > /home/$ACTUAL_USER/.config/autostart/piosk-kiosk.desktop << EOF
 Type=Application
 Name=PiOSK Kiosk
 Comment=PiOSK Kiosk Mode
-Exec=/opt/piosk/scripts/runner.sh
+Exec=/opt/piosk/scripts/runner-smart.sh
 Terminal=false
 X-GNOME-Autostart-enabled=true
 X-GNOME-Autostart-Delay=10
@@ -269,7 +269,7 @@ echo "Dashboard is available at:"
 echo "  http://$(hostname) or http://$(hostname -I | cut -d ' ' -f1)"
 echo ""
 echo "To start PiOSK manually:"
-echo "  /opt/piosk/scripts/runner.sh"
+echo "  /opt/piosk/scripts/runner-smart.sh"
 echo ""
 echo "To enable the switcher service (after logging in to desktop):"
 echo "  systemctl --user enable piosk-switcher"

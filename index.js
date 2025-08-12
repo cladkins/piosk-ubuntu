@@ -115,6 +115,9 @@ app.get('/system/check', (req, res) => {
 app.post('/single-screen/start', (req, res) => {
   // Stop any existing chromium processes first
   exe('pkill -f "chromium.*remote-debugging-port=9222" 2>/dev/null || true', (err1) => {
+    // Save the current mode state
+    nfs.writeFile(path.join(BASE_DIR, 'last-mode.txt'), 'single-screen', () => {})
+    
     // Start single-screen mode
     exe(`${path.join(BASE_DIR, 'scripts', 'runner.sh')} > /tmp/piosk-single.log 2>&1 &`, (err, stdout, stderr) => {
       if (err) {
@@ -129,6 +132,30 @@ app.post('/single-screen/start', (req, res) => {
 app.post('/single-screen/stop', (req, res) => {
   exe('pkill -f "chromium.*remote-debugging-port=9222" 2>/dev/null || true', (err, stdout, stderr) => {
     res.json({ message: 'Single-screen mode stopped' })
+  })
+})
+
+// Get current mode status
+app.get('/mode/status', (req, res) => {
+  const lastModeFile = path.join(BASE_DIR, 'last-mode.txt')
+  let lastMode = 'single-screen' // default
+  
+  try {
+    if (nfs.existsSync(lastModeFile)) {
+      lastMode = nfs.readFileSync(lastModeFile, 'utf8').trim()
+    }
+  } catch (err) {
+    console.warn('Could not read last-mode.txt:', err.message)
+  }
+  
+  // Check if any chromium processes are running
+  exe('pgrep -f "chromium.*remote-debugging-port" || echo "none"', (err, stdout) => {
+    const running = stdout.trim() !== 'none' && stdout.trim() !== ''
+    res.json({ 
+      lastMode: lastMode,
+      running: running,
+      processes: running ? stdout.trim().split('\n') : []
+    })
   })
 })
 

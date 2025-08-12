@@ -112,12 +112,25 @@ EOF
     sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
         --start-fullscreen \
         --start-maximized \
+        --kiosk \
         --disable-infobars \
         --disable-extensions \
         --disable-plugins \
         --disable-translate \
         --disable-default-apps \
+        --disable-notifications \
+        --disable-popup-blocking \
+        --disable-prompt-on-repost \
+        --disable-hang-monitor \
+        --disable-features=TranslateUI \
+        --disable-ipc-flooding-protection \
         --no-first-run \
+        --no-default-browser-check \
+        --disable-background-timer-throttling \
+        --disable-renderer-backgrounding \
+        --disable-backgrounding-occluded-windows \
+        --disable-features=VizDisplayCompositor \
+        --autoplay-policy=no-user-gesture-required \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
         $EXTRA_FLAGS \
