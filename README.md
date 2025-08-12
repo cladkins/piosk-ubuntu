@@ -27,6 +27,8 @@ This is an **Ubuntu adaptation** of the original [PiOSK project](https://github.
 - **Nginx Reverse Proxy**: Secure web interface on port 80
 - **Snap Chromium Support**: Uses Ubuntu's snap Chromium for better compatibility
 - **Power Management**: Automatically disables screen saver, auto logout, and power management for kiosk mode
+- **System Diagnostics**: Built-in system check tool to verify dependencies and configuration
+- **Dependency Validation**: Automatic checks for required software before starting kiosk mode
 
 ## System Requirements
 
@@ -77,7 +79,7 @@ sudo ./scripts/setup.sh
 
 ### Advanced Configuration
 
-The configuration file is located at `/opt/piosk/config.json`. You can edit it directly or use the web interface.
+The configuration file is located at `config.json` in the project directory. You can edit it directly or use the web interface.
 
 Example configuration:
 ```json
@@ -92,6 +94,50 @@ Example configuration:
     ]
 }
 ```
+
+## System Diagnostics
+
+PiOSK includes a built-in system check tool to help diagnose installation and configuration issues.
+
+### Using System Check
+
+The System Check button is available in the navigation bar on all pages:
+
+1. Visit the dashboard at `http://<your-ubuntu-ip>/`
+2. Click the **System Check** button in the navigation bar
+3. View the diagnostic results showing:
+   - **Snap**: Whether snap package manager is installed
+   - **Chromium**: Whether Chromium browser is installed via snap
+   - **jq**: Whether JSON parsing tool is available
+   - **DISPLAY**: Current X11 display environment setting
+
+### What System Check Tells You
+
+- **✓ Installed**: Component is properly installed and available
+- **✗ Not installed**: Component is missing and needs to be installed
+- **Display value**: Shows the current X11 DISPLAY environment variable
+
+### Installing Missing Dependencies
+
+If System Check shows missing components:
+
+```bash
+# Install snap (if missing)
+sudo apt update && sudo apt install snapd
+
+# Install Chromium browser
+sudo snap install chromium
+
+# Install jq for JSON processing
+sudo apt install jq
+```
+
+### Common Issues Detected
+
+- **Chromium not installed**: Kiosk mode won't start without a browser
+- **jq missing**: Configuration files can't be processed
+- **DISPLAY not set**: Browser won't know which screen to use
+- **Snap not available**: Can't install or run Chromium
 
 ## Display Manager Support
 
@@ -141,7 +187,7 @@ To restore normal power management behavior:
 
 ```bash
 # Remove PiOSK completely (includes power settings)
-sudo /opt/piosk/scripts/cleanup.sh
+sudo ./scripts/cleanup.sh
 ```
 
 ## Multi-Screen Support
@@ -174,17 +220,17 @@ PiOSK now supports multiple displays, allowing you to run separate browsers on e
 #### Command Line Usage
 ```bash
 # Detect available displays
-sudo /opt/piosk/scripts/detect-displays.sh
+./scripts/detect-displays.sh
 
 # Start multi-screen mode
-sudo /opt/piosk/scripts/runner-multiscreen.sh
+./scripts/runner-multiscreen.sh
 
 # Stop all screens
-sudo pkill -f "chromium.*piosk"
+sudo pkill -f "chromium.*kiosk"
 ```
 
 ### Multi-Screen Configuration
-Screen configurations are stored in `/opt/piosk/screens/` as JSON files:
+Screen configurations are stored in `./screens/` as JSON files:
 - `:0.json` - Configuration for primary display
 - `:1.json` - Configuration for secondary display
 - etc.
@@ -231,7 +277,7 @@ PiOSK includes a web-based switcher control interface that allows you to manage 
 - **Button states**: Start/restart buttons are disabled when the switcher is disabled in configuration
 
 ### Configuration
-Switcher settings are stored in `/opt/piosk/config.json`:
+Switcher settings are stored in `config.json`:
 
 ```json
 {
@@ -246,18 +292,39 @@ Switcher settings are stored in `/opt/piosk/config.json`:
 
 ## Troubleshooting
 
+### Quick Diagnosis
+
+**Start here first**: Use the **System Check** button in the web interface to check for common issues.
+
 ### Common Issues
 
-1. **Display not working**: Ensure you're logged into a desktop session
-2. **Web dashboard not accessible**: Check if nginx is running: `sudo systemctl status nginx`
-3. **Chromium not starting**: Verify display permissions and X11 setup
-4. **Auto-login not working**: Check your display manager configuration
-5. **Screen still going to sleep**: Check if power management service is running: `systemctl --user status piosk-power-management.service`
-6. **Power settings not persisting**: Check if the systemd user service is enabled: `systemctl --user status piosk-power-management.service`
-7. **Dashboard not accessible (502 error)**: Check if the dashboard service is running: `sudo systemctl status piosk-dashboard`
-8. **Dashboard service won't start**: Try running manually: `cd /opt/piosk && sudo -u $USER npm start`
-9. **Switcher not working**: Check if the switcher service is running: `sudo systemctl status piosk-switcher`
-10. **Tabs not switching**: Verify Chromium is running and switcher service is active
+1. **Kiosk mode won't start**: Click **System Check** to verify Chromium, snap, and jq are installed
+2. **Display not working**: Ensure you're logged into a desktop session
+3. **Web dashboard not accessible**: Check if nginx is running: `sudo systemctl status nginx`
+4. **Chromium not starting**: Verify display permissions and X11 setup
+5. **Auto-login not working**: Check your display manager configuration
+6. **"Error: Chromium snap is not installed"**: Run `sudo snap install chromium`
+7. **"Error: jq is not installed"**: Run `sudo apt install jq`
+8. **"Error: snap is not installed"**: Run `sudo apt update && sudo apt install snapd`
+9. **Screen still going to sleep**: Check if power management service is running: `systemctl --user status piosk-power-management.service`
+10. **Power settings not persisting**: Check if the systemd user service is enabled: `systemctl --user status piosk-power-management.service`
+11. **Dashboard not accessible (502 error)**: Check if the dashboard service is running: `sudo systemctl status piosk-dashboard`
+12. **Dashboard service won't start**: Try running manually in project directory: `npm start`
+13. **Switcher not working**: Check if the switcher service is running: `sudo systemctl status piosk-switcher`
+14. **Tabs not switching**: Verify Chromium is running and switcher service is active
+
+### Error Logs
+
+If kiosk mode fails to start, check these log files for detailed error messages:
+
+```bash
+# Single-screen mode logs
+cat /tmp/piosk-single.log
+
+# Multi-screen mode logs (per display)
+cat /tmp/piosk-:0.log
+cat /tmp/piosk-:1.log
+```
 
 ### Service Management
 
@@ -287,7 +354,7 @@ If the switcher controls aren't working in the dashboard:
 
 2. **Check if switcher is enabled in configuration:**
    ```bash
-   cat /opt/piosk/config.json | jq '.switcher.enabled'
+   cat config.json | jq '.switcher.enabled'
    ```
 
 3. **Check dashboard service environment:**
@@ -357,11 +424,6 @@ Session=ubuntu.desktop
 
 To remove PiOSK from your Ubuntu system:
 
-```bash
-sudo /opt/piosk/scripts/cleanup.sh
-```
-
-Or if you've installed manually:
 ```bash
 sudo ./scripts/cleanup.sh
 ```
