@@ -40,19 +40,32 @@ let multiscreen = {
             return;
         }
 
-        const html = this.displays.map(display => `
-            <div class="mb-3">
-                <h6>Screen: ${display}</h6>
-                <div class="row">
-                    <div class="col-md-8">
-                        <textarea class="form-control" id="urls-${display}" rows="3" 
-                                  placeholder="Enter URLs (one per line)">https://time.is
+        const html = this.displays.map((display, index) => `
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <span class="badge bg-primary me-2">${display}</span>
+                        Display ${index + 1} ${index === 0 ? '(Primary)' : '(Secondary)'}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label for="urls-${display}" class="form-label">Web Pages (one per line):</label>
+                            <textarea class="form-control" id="urls-${display}" rows="3" 
+                                      placeholder="Enter URLs (one per line)">https://time.is
 https://weather.com</textarea>
-                    </div>
-                    <div class="col-md-4">
-                        <button class="btn btn-sm btn-primary" onclick="multiscreen.saveScreen('${display}')">Save</button>
-                        <button class="btn btn-sm btn-success" onclick="multiscreen.startScreen('${display}')">Start</button>
-                        <button class="btn btn-sm btn-danger" onclick="multiscreen.stopScreen('${display}')">Stop</button>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Controls:</label>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" onclick="multiscreen.saveScreen('${display}')">Save Configuration</button>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-success" onclick="multiscreen.startScreen('${display}')">Start</button>
+                                    <button class="btn btn-danger" onclick="multiscreen.stopScreen('${display}')">Stop</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
