@@ -130,9 +130,20 @@ EOF
     echo "$(date): Chromium started with PID: $CHROMIUM_PID"
     
     # Give it a moment to start and check if it's still running
-    sleep 2
+    sleep 3
     if kill -0 $CHROMIUM_PID 2>/dev/null; then
         echo "$(date): Chromium process $CHROMIUM_PID is running successfully on $DISPLAY_ID"
+        
+        # Force fullscreen for this specific window using its PID
+        echo "$(date): Forcing fullscreen for $DISPLAY_ID (PID: $CHROMIUM_PID)"
+        WINDOW_ID=$(sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --pid $CHROMIUM_PID 2>/dev/null | head -1)
+        
+        if [ -n "$WINDOW_ID" ]; then
+            echo "$(date): Found window ID: $WINDOW_ID for PID: $CHROMIUM_PID"
+            sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool windowactivate --sync $WINDOW_ID key F11 2>/dev/null || true
+        else
+            echo "$(date): Could not find window ID for PID: $CHROMIUM_PID"
+        fi
     else
         echo "$(date): ERROR: Chromium process $CHROMIUM_PID exited immediately on $DISPLAY_ID"
         echo "$(date): Chromium log output:"
