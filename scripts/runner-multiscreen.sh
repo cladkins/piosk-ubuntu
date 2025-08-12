@@ -98,25 +98,26 @@ EOF
     echo "$(date): Starting browser on $DISPLAY_ID with URLs: $URLS"
     echo "$(date): Using same method as working single-screen script"
     
-    # Position browsers on different monitors
+    # For multi-monitor kiosk mode, we need different approach
     if [ "$DISPLAY_ID" = ":0" ]; then
-        # First monitor - left side
-        WINDOW_POSITION="--window-position=0,0 --window-size=1920,1080"
+        # First monitor - use pure kiosk mode
+        EXTRA_FLAGS=""
     else
-        # Second monitor - right side (assumes 1920px wide monitors)
-        WINDOW_POSITION="--window-position=1920,0 --window-size=1920,1080"
+        # Second monitor - start on different position first, then go fullscreen
+        EXTRA_FLAGS="--new-window --window-position=1920,0"
     fi
     
-    echo "$(date): Starting browser with fullscreen and positioning"
-    echo "$(date): Position: $WINDOW_POSITION"
+    echo "$(date): Starting browser in kiosk mode"
+    echo "$(date): Extra flags for $DISPLAY_ID: $EXTRA_FLAGS"
     
     sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
         --kiosk \
-        --start-fullscreen \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
         --no-sandbox \
-        $WINDOW_POSITION \
+        --disable-features=TranslateUI \
+        --disable-ipc-flooding-protection \
+        $EXTRA_FLAGS \
         $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     
     CHROMIUM_PID=$!
@@ -136,6 +137,9 @@ EOF
     fi
     
     PORT=$((PORT + 1))
+    
+    # Add delay between browser starts to prevent conflicts
+    sleep 2
 done
 
 echo "$(date): Multi-screen mode startup completed"
