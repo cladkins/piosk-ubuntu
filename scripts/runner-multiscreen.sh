@@ -98,15 +98,25 @@ EOF
     echo "$(date): Starting browser on $DISPLAY_ID with URLs: $URLS"
     echo "$(date): Using same method as working single-screen script"
     
-    # Use the exact same command that worked manually
-    echo "$(date): Running exact same command that worked manually"
-    echo "$(date): Command: sudo -u $REAL_USER DISPLAY=:0 XAUTHORITY=$XAUTH_FILE snap run chromium --kiosk --remote-debugging-port=$PORT --user-data-dir=/tmp/piosk-$DISPLAY_ID --no-sandbox $URLS"
+    # Position browsers on different monitors
+    if [ "$DISPLAY_ID" = ":0" ]; then
+        # First monitor - left side
+        WINDOW_POSITION="--window-position=0,0 --window-size=1920,1080"
+    else
+        # Second monitor - right side (assumes 1920px wide monitors)
+        WINDOW_POSITION="--window-position=1920,0 --window-size=1920,1080"
+    fi
+    
+    echo "$(date): Starting browser with fullscreen and positioning"
+    echo "$(date): Position: $WINDOW_POSITION"
     
     sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
         --kiosk \
+        --start-fullscreen \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
         --no-sandbox \
+        $WINDOW_POSITION \
         $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     
     CHROMIUM_PID=$!
