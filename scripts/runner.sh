@@ -34,8 +34,5 @@ fi
 
 echo "Starting Chromium with URLs: $URLS"
 
-# Set up X11 authorization  
-export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
-
-# Use snap Chromium with remote debugging enabled
-exec snap run chromium --kiosk --remote-debugging-port=9222 --no-sandbox $URLS 
+# Use snap Chromium with remote debugging enabled, run as proper user
+exec sudo -u $USER DISPLAY=:0 XAUTHORITY="$HOME/.Xauthority" snap run chromium --kiosk --remote-debugging-port=9222 --no-sandbox $URLS 

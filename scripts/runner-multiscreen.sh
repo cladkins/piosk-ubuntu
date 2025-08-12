@@ -65,10 +65,8 @@ EOF
     # Start browser on this display with proper X11 authorization
     echo "Starting browser on $DISPLAY_ID with URLs: $URLS"
     
-    # Set up X11 authorization
-    export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
-    
-    DISPLAY="$DISPLAY_ID" nohup snap run chromium \
+    # Run as the logged-in user with proper X11 access
+    sudo -u $USER DISPLAY="$DISPLAY_ID" XAUTHORITY="$HOME/.Xauthority" nohup snap run chromium \
         --kiosk \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
