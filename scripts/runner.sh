@@ -37,7 +37,16 @@ echo "Starting Chromium with URLs: $URLS"
 # Find the actual logged-in user and their X authority
 REAL_USER=$(who | awk 'NR==1{print $1}')
 REAL_HOME=$(eval echo ~$REAL_USER)
-XAUTH_FILE="$REAL_HOME/.Xauthority"
+
+# Find the actual X authority file (Wayland vs X11)
+USER_ID=$(id -u $REAL_USER)
+if [ -f "/run/user/$USER_ID/.mutter-Xwaylandauth"* ]; then
+    XAUTH_FILE=$(find /run/user/$USER_ID -name ".mutter-Xwaylandauth*" 2>/dev/null | head -1)
+else
+    XAUTH_FILE="$REAL_HOME/.Xauthority"  # fallback
+fi
+
+echo "Found X authority file: $XAUTH_FILE"
 
 # Use snap Chromium with remote debugging enabled, run as proper user
 exec sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium --kiosk --remote-debugging-port=9222 --no-sandbox $URLS 

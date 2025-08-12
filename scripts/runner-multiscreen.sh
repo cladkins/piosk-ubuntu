@@ -84,7 +84,16 @@ EOF
     # Use the EXACT same approach as the working single-screen script
     REAL_USER=$(who | awk 'NR==1{print $1}')
     REAL_HOME=$(eval echo ~$REAL_USER)
-    XAUTH_FILE="$REAL_HOME/.Xauthority"
+    
+    # Find the actual X authority file (Wayland vs X11)
+    USER_ID=$(id -u $REAL_USER)
+    if [ -f "/run/user/$USER_ID/.mutter-Xwaylandauth"* ]; then
+        XAUTH_FILE=$(find /run/user/$USER_ID -name ".mutter-Xwaylandauth*" 2>/dev/null | head -1)
+    else
+        XAUTH_FILE="$REAL_HOME/.Xauthority"  # fallback
+    fi
+    
+    echo "$(date): Found X authority file: $XAUTH_FILE"
     
     echo "$(date): Starting browser on $DISPLAY_ID with URLs: $URLS"
     echo "$(date): Using same method as working single-screen script"
