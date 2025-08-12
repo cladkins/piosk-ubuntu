@@ -134,15 +134,26 @@ EOF
     if kill -0 $CHROMIUM_PID 2>/dev/null; then
         echo "$(date): Chromium process $CHROMIUM_PID is running successfully on $DISPLAY_ID"
         
-        # Force fullscreen for this specific window using its PID
+        # Force fullscreen for this specific window using multiple approaches
         echo "$(date): Forcing fullscreen for $DISPLAY_ID (PID: $CHROMIUM_PID)"
+        
+        # Method 1: Try PID-based targeting
         WINDOW_ID=$(sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --pid $CHROMIUM_PID 2>/dev/null | head -1)
         
         if [ -n "$WINDOW_ID" ]; then
             echo "$(date): Found window ID: $WINDOW_ID for PID: $CHROMIUM_PID"
             sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool windowactivate --sync $WINDOW_ID key F11 2>/dev/null || true
+            sleep 1
+            # Try windowstate as backup
+            sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool windowactivate --sync $WINDOW_ID windowstate --toggle FULLSCREEN 2>/dev/null || true
         else
-            echo "$(date): Could not find window ID for PID: $CHROMIUM_PID"
+            echo "$(date): Could not find window ID for PID: $CHROMIUM_PID, trying alternative approach"
+            # Method 2: Target the most recently created window
+            LATEST_WINDOW=$(sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --class "chromium" 2>/dev/null | tail -1)
+            if [ -n "$LATEST_WINDOW" ]; then
+                echo "$(date): Using latest chromium window: $LATEST_WINDOW"
+                sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool windowactivate --sync $LATEST_WINDOW key F11 2>/dev/null || true
+            fi
         fi
     else
         echo "$(date): ERROR: Chromium process $CHROMIUM_PID exited immediately on $DISPLAY_ID"
