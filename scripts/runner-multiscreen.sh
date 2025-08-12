@@ -158,8 +158,8 @@ EOF
     
     PORT=$((PORT + 1))
     
-    # Add delay between browser starts to prevent conflicts
-    sleep 2
+    # Add longer delay between browser starts to prevent conflicts and allow fullscreen to work
+    sleep 5
 done
 
 echo "$(date): Multi-screen mode startup completed"
