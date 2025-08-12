@@ -7,12 +7,34 @@ echo "Starting PiOSK multi-screen mode..."
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Check if Chromium is installed
+if ! command -v snap >/dev/null 2>&1; then
+    echo "Error: snap is not installed"
+    exit 1
+fi
+
+if ! snap list chromium >/dev/null 2>&1; then
+    echo "Error: Chromium snap is not installed. Please install with: sudo snap install chromium"
+    exit 1
+fi
+
+# Check if jq is available
+if ! command -v jq >/dev/null 2>&1; then
+    echo "Error: jq is not installed. Please install with: sudo apt install jq"
+    exit 1
+fi
+
 # Directory for screen configs
 SCREEN_DIR="$PROJECT_ROOT/screens"
 mkdir -p "$SCREEN_DIR"
 
 # Get available displays
 DISPLAYS=$("$SCRIPT_DIR/detect-displays.sh")
+
+if [ -z "$DISPLAYS" ]; then
+    echo "Warning: No displays detected, using :0 as fallback"
+    DISPLAYS=":0"
+fi
 
 # First, stop any existing single-screen chromium
 pkill -f "chromium.*kiosk" 2>/dev/null || true

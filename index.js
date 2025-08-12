@@ -74,14 +74,37 @@ app.post('/switcher/restart', (req, res) => {
   })
 })
 
+// System check endpoint
+app.get('/system/check', (req, res) => {
+  const checks = []
+  
+  exe('command -v snap', (err1, stdout1) => {
+    checks.push({ name: 'snap', installed: !err1, version: err1 ? null : stdout1.trim() })
+    
+    exe('snap list chromium', (err2, stdout2) => {
+      checks.push({ name: 'chromium', installed: !err2, version: err2 ? null : stdout2.split('\n')[1] })
+      
+      exe('command -v jq', (err3, stdout3) => {
+        checks.push({ name: 'jq', installed: !err3, version: err3 ? null : stdout3.trim() })
+        
+        exe('echo $DISPLAY', (err4, stdout4) => {
+          checks.push({ name: 'display', value: stdout4.trim() || 'Not set' })
+          
+          res.json({ checks })
+        })
+      })
+    })
+  })
+})
+
 // Single-screen mode control
 app.post('/single-screen/start', (req, res) => {
   // Stop multi-screen mode first
   exe('pkill -f "chromium.*kiosk" 2>/dev/null || true', (err1) => {
     // Start single-screen mode
-    exe(`nohup ${path.join(__dirname, 'scripts', 'runner.sh')} > /dev/null 2>&1 &`, (err, stdout, stderr) => {
+    exe(`${path.join(__dirname, 'scripts', 'runner.sh')} > /tmp/piosk-single.log 2>&1 &`, (err, stdout, stderr) => {
       if (err) {
-        res.status(500).json({ error: 'Failed to start single-screen mode', details: stderr })
+        res.status(500).json({ error: 'Failed to start single-screen mode', details: stderr || 'Check /tmp/piosk-single.log for details' })
       } else {
         res.json({ message: 'Single-screen mode started successfully' })
       }

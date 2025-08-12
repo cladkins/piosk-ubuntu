@@ -73,6 +73,25 @@ $(document).ready(() => {
     })
   })
 
+  // System check button
+  $('#system-check').on('click', () => {
+    $.getJSON('/system/check')
+      .done((data) => {
+        let message = 'System Check Results:\n\n'
+        data.checks.forEach(check => {
+          if (check.installed !== undefined) {
+            message += `${check.name}: ${check.installed ? '✓ Installed' : '✗ Not installed'}\n`
+          } else {
+            message += `${check.name}: ${check.value}\n`
+          }
+        })
+        piosk.showAlert(`<pre>${message}</pre>`, 'info')
+      })
+      .fail(() => {
+        piosk.showAlert('Failed to check system status', 'danger')
+      })
+  })
+
   // Mode control buttons
   $('#start-single').on('click', () => {
     $.ajax({
