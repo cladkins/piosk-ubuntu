@@ -132,6 +132,28 @@ app.post('/single-screen/stop', (req, res) => {
   })
 })
 
+// Logs endpoint for debugging
+app.get('/logs/:logfile?', (req, res) => {
+  const logfile = req.params.logfile;
+  const fs = require('fs');
+  
+  if (logfile) {
+    const logPath = `/tmp/${logfile}`;
+    if (fs.existsSync(logPath)) {
+      const content = fs.readFileSync(logPath, 'utf8');
+      res.json({ logfile, content: content.split('\n').slice(-100) }); // Last 100 lines
+    } else {
+      res.status(404).json({ error: 'Log file not found', logfile });
+    }
+  } else {
+    // List available log files
+    const logFiles = fs.readdirSync('/tmp')
+      .filter(f => f.startsWith('piosk-') && f.endsWith('.log'))
+      .map(f => ({ name: f, size: fs.statSync(`/tmp/${f}`).size }));
+    res.json({ logFiles });
+  }
+})
+
 // Add multi-screen functionality
 try {
   const { addMultiScreenRoutes } = require('./multiscreen-api')

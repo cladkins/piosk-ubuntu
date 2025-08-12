@@ -125,13 +125,30 @@ function addMultiScreenRoutes(app) {
 
     // Start all screens (multi-screen mode)
     app.post('/multiscreen/start-all', (req, res) => {
+        console.log(`${new Date().toISOString()}: Starting multi-screen mode requested`);
+        console.log(`${new Date().toISOString()}: BASE_DIR: ${BASE_DIR}`);
+        
+        const scriptPath = path.join(BASE_DIR, 'scripts', 'runner-multiscreen.sh');
+        console.log(`${new Date().toISOString()}: Script path: ${scriptPath}`);
+        console.log(`${new Date().toISOString()}: Script exists: ${require('fs').existsSync(scriptPath)}`);
+        
         // First stop single-screen mode and switcher to avoid conflicts
         exec('pkill -f "chromium.*kiosk" && systemctl --user stop piosk-switcher 2>/dev/null || true', (error1) => {
+            console.log(`${new Date().toISOString()}: Cleanup completed, starting multi-screen script`);
+            
             // Now start multi-screen mode
-            exec(path.join(BASE_DIR, 'scripts', 'runner-multiscreen.sh'), (error, stdout, stderr) => {
+            exec(scriptPath, (error, stdout, stderr) => {
+                console.log(`${new Date().toISOString()}: Multi-screen script execution completed`);
+                console.log(`${new Date().toISOString()}: Error:`, error);
+                console.log(`${new Date().toISOString()}: Stdout:`, stdout);
+                console.log(`${new Date().toISOString()}: Stderr:`, stderr);
+                
                 if (error) {
-                    res.status(500).json({ error: 'Failed to start multi-screen mode', details: error.message });
+                    const errorDetails = `Error: ${error.message}, Stdout: ${stdout}, Stderr: ${stderr}`;
+                    console.log(`${new Date().toISOString()}: Multi-screen start failed: ${errorDetails}`);
+                    res.status(500).json({ error: 'Failed to start multi-screen mode', details: errorDetails });
                 } else {
+                    console.log(`${new Date().toISOString()}: Multi-screen mode started successfully`);
                     res.json({ message: 'Multi-screen mode started successfully' });
                 }
             });

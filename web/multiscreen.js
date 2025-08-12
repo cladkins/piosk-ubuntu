@@ -6,6 +6,7 @@ let multiscreen = {
         document.getElementById('stopMulti').addEventListener('click', () => this.stopMultiScreen());
         document.getElementById('detectDisplays').addEventListener('click', () => this.detectDisplays());
         document.getElementById('system-check').addEventListener('click', () => this.systemCheck());
+        document.getElementById('view-logs').addEventListener('click', () => this.viewLogs());
     },
 
     async detectDisplays() {
@@ -172,6 +173,31 @@ https://weather.com</textarea>
             this.showAlert(`<pre>${message}</pre>`, 'info');
         } catch (error) {
             this.showAlert('Failed to check system status: ' + error.message, 'danger');
+        }
+    },
+
+    async viewLogs() {
+        try {
+            const response = await fetch('/logs');
+            const data = await response.json();
+            
+            let message = 'Available Log Files:\n\n';
+            if (data.logFiles && data.logFiles.length > 0) {
+                data.logFiles.forEach(log => {
+                    message += `${log.name} (${log.size} bytes)\n`;
+                });
+                message += '\nClick to view specific logs:\n';
+                message += '• Multi-screen: /logs/piosk-multiscreen.log\n';
+                message += '• Display :0: /logs/piosk-:0.log\n';
+                message += '• Display :1: /logs/piosk-:1.log\n';
+                message += '• Single-screen: /logs/piosk-single.log\n';
+            } else {
+                message += 'No log files found\n';
+            }
+            
+            this.showAlert(`<pre>${message}</pre>`, 'info');
+        } catch (error) {
+            this.showAlert('Failed to load logs: ' + error.message, 'danger');
         }
     },
 
