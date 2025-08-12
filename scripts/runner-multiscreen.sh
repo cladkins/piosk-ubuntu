@@ -118,6 +118,7 @@ EOF
         --disable-translate \
         --disable-default-apps \
         --no-first-run \
+        --disable-session-crashed-bubble \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
         $EXTRA_FLAGS \
