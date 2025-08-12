@@ -111,11 +111,6 @@ EOF
     
     sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
         --kiosk \
-        --start-fullscreen \
-        --no-first-run \
-        --disable-infobars \
-        --disable-notifications \
-        --disable-default-apps \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
         $EXTRA_FLAGS \
