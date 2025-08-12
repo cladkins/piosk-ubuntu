@@ -20,7 +20,7 @@ function addMultiScreenRoutes(app) {
                 return;
             }
             
-            const displays = stdout.trim().split('\n').filter(d => d.trim());
+            const displays = stdout.trim().split(/\s+/).filter(d => d.trim());
             res.json({ displays: displays.length > 0 ? displays : [':0'] });
         });
     });

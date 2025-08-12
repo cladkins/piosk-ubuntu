@@ -39,7 +39,7 @@ count_connected_displays() {
 CONNECTED_COUNT=$(count_connected_displays)
 
 # Debug output (comment out in production)
-echo "Debug: Found $CONNECTED_COUNT connected displays" >&2
+# echo "Debug: Found $CONNECTED_COUNT connected displays" >&2
 
 # Generate display IDs based on connected hardware
 if [ "$CONNECTED_COUNT" -gt 1 ]; then
