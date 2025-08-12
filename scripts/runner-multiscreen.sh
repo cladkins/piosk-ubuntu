@@ -98,27 +98,13 @@ EOF
     echo "$(date): Starting browser on $DISPLAY_ID with URLs: $URLS"
     echo "$(date): Using same method as working single-screen script"
     
-    # Use the exact same flags as working single-screen, just different positioning
-    echo "$(date): Starting browser with exact same flags as single-screen"
-    
-    if [ "$DISPLAY_ID" = ":0" ]; then
-        # First browser - no positioning (let it go where it wants)
-        sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
-            --kiosk \
-            --remote-debugging-port=$PORT \
-            --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
-            --no-sandbox \
-            $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
-    else
-        # Second browser - try to position it on second monitor
-        sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
-            --kiosk \
-            --remote-debugging-port=$PORT \
-            --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
-            --no-sandbox \
-            --window-position=1920,0 \
-            $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
-    fi
+    # Back to the version that was working with fullscreen
+    sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
+        --kiosk \
+        --remote-debugging-port=$PORT \
+        --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
+        --no-sandbox \
+        $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     
     CHROMIUM_PID=$!
     
