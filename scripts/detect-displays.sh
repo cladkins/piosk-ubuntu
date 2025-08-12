@@ -59,18 +59,14 @@ if [ -z "$DISPLAYS" ]; then
     done
 fi
 
-# Method 4: Try to detect hardware displays directly
+# Method 4: For Wayland systems, check X11 sockets that actually exist
 if [ -z "$DISPLAYS" ]; then
-    # Check for connected displays in sysfs
-    if [ -d "/sys/class/drm" ]; then
-        CONNECTED_COUNT=$(find /sys/class/drm -name "card*-*" -exec cat {}/status \; 2>/dev/null | grep -c "connected")
-        if [ "$CONNECTED_COUNT" -gt 1 ]; then
-            # Multiple displays detected, create virtual display IDs
-            for i in $(seq 0 $((CONNECTED_COUNT - 1))); do
-                DISPLAYS="$DISPLAYS :$i"
-            done
+    for socket in /tmp/.X11-unix/X*; do
+        if [ -S "$socket" ]; then
+            DISPLAY_NUM=$(basename "$socket" | sed 's/X//')
+            DISPLAYS="$DISPLAYS :$DISPLAY_NUM"
         fi
-    fi
+    done
 fi
 
 # Fallback: Use default display
