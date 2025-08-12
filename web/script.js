@@ -54,4 +54,23 @@ $(document).ready(() => {
       error: piosk.showStatus
     })
   })
+
+  // Mode control buttons
+  $('#start-single').on('click', () => {
+    $.ajax({
+      url: '/single-screen/start',
+      type: 'POST',
+      success: (data) => piosk.showStatus({ responseText: data.message }),
+      error: piosk.showStatus
+    })
+  })
+
+  $('#stop-single').on('click', () => {
+    $.ajax({
+      url: '/single-screen/stop',
+      type: 'POST',
+      success: (data) => piosk.showStatus({ responseText: data.message }),
+      error: piosk.showStatus
+    })
+  })
 })

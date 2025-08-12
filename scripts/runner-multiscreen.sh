@@ -10,8 +10,12 @@ mkdir -p "$SCREEN_DIR"
 # Get available displays
 DISPLAYS=$(/opt/piosk/scripts/detect-displays.sh)
 
-# Counter for debug ports
-PORT=9222
+# First, stop any existing single-screen chromium
+pkill -f "chromium.*kiosk" 2>/dev/null || true
+sleep 2
+
+# Counter for debug ports (avoid conflict with single-screen mode)
+PORT=9223
 
 # Start browser on each display
 for DISPLAY_ID in $DISPLAYS; do

@@ -59,10 +59,10 @@ https://weather.com</textarea>
                         <div class="col-md-4">
                             <label class="form-label">Controls:</label>
                             <div class="d-grid gap-2">
-                                <button class="btn btn-primary" onclick="multiscreen.saveScreen('${display}')">Save Configuration</button>
-                                <div class="btn-group" role="group">
-                                    <button class="btn btn-success" onclick="multiscreen.startScreen('${display}')">Start</button>
-                                    <button class="btn btn-danger" onclick="multiscreen.stopScreen('${display}')">Stop</button>
+                                <button type="button" class="btn btn-primary" onclick="multiscreen.saveScreen('${display}')">Save Configuration</button>
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-success" onclick="multiscreen.startScreen('${display}')">Start</button>
+                                    <button type="button" class="btn btn-danger" onclick="multiscreen.stopScreen('${display}')">Stop</button>
                                 </div>
                             </div>
                         </div>
@@ -127,14 +127,16 @@ https://weather.com</textarea>
     async startMultiScreen() {
         try {
             const response = await fetch('/multiscreen/start-all', { method: 'POST' });
+            const data = await response.json();
+            
             if (response.ok) {
-                this.showAlert('Multi-screen mode started', 'success');
+                this.showAlert(data.message || 'Multi-screen mode started', 'success');
             } else {
-                throw new Error('Start failed');
+                throw new Error(data.error || 'Start failed');
             }
         } catch (error) {
             console.error('Error starting multi-screen:', error);
-            this.showAlert('Failed to start multi-screen mode', 'danger');
+            this.showAlert('Failed to start multi-screen mode: ' + error.message, 'danger');
         }
     },
 
@@ -153,20 +155,22 @@ https://weather.com</textarea>
     },
 
     showAlert(message, type) {
-        // Simple alert for now
-        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-        const alertHtml = `<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+        const container = document.getElementById('alert-container');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>`;
+        `;
         
-        document.querySelector('.container').insertAdjacentHTML('afterbegin', alertHtml);
+        container.appendChild(alert);
         
-        // Auto-dismiss after 3 seconds
+        // Auto-remove after 5 seconds
         setTimeout(() => {
-            const alert = document.querySelector('.alert');
-            if (alert) alert.remove();
-        }, 3000);
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 5000);
     }
 };
 

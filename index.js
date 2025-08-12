@@ -73,6 +73,27 @@ app.post('/switcher/restart', (req, res) => {
   })
 })
 
+// Single-screen mode control
+app.post('/single-screen/start', (req, res) => {
+  // Stop multi-screen mode first
+  exe('pkill -f "chromium.*piosk" 2>/dev/null || true', (err1) => {
+    // Start single-screen mode
+    exe('nohup /opt/piosk/scripts/runner.sh > /dev/null 2>&1 &', (err, stdout, stderr) => {
+      if (err) {
+        res.status(500).json({ error: 'Failed to start single-screen mode', details: stderr })
+      } else {
+        res.json({ message: 'Single-screen mode started successfully' })
+      }
+    })
+  })
+})
+
+app.post('/single-screen/stop', (req, res) => {
+  exe('pkill -f "chromium.*kiosk" 2>/dev/null || true', (err, stdout, stderr) => {
+    res.json({ message: 'Single-screen mode stopped' })
+  })
+})
+
 // Add multi-screen functionality
 try {
   const { addMultiScreenRoutes } = require('./multiscreen-api')

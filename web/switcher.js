@@ -161,6 +161,11 @@ let switcher = {
     const interval = parseInt(document.getElementById('switcher-interval').value);
     const refresh = parseInt(document.getElementById('switcher-refresh').value);
     
+    // Warning about multi-screen mode
+    if (enabled) {
+      this.showAlert('Note: Switcher only works in single-screen mode. Multi-screen mode will be stopped if active.', 'info');
+    }
+    
     // Validate inputs
     if (interval < 1 || interval > 300) {
       this.showAlert('Switch interval must be between 1 and 300 seconds', 'warning');

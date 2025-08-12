@@ -123,12 +123,16 @@ function addMultiScreenRoutes(app) {
 
     // Start all screens (multi-screen mode)
     app.post('/multiscreen/start-all', (req, res) => {
-        exec('/opt/piosk/scripts/runner-multiscreen.sh', (error, stdout, stderr) => {
-            if (error) {
-                res.status(500).json({ error: 'Failed to start multi-screen mode', details: error.message });
-            } else {
-                res.json({ message: 'Multi-screen mode started' });
-            }
+        // First stop single-screen mode and switcher to avoid conflicts
+        exec('pkill -f "chromium.*kiosk" && systemctl --user stop piosk-switcher 2>/dev/null || true', (error1) => {
+            // Now start multi-screen mode
+            exec('/opt/piosk/scripts/runner-multiscreen.sh', (error, stdout, stderr) => {
+                if (error) {
+                    res.status(500).json({ error: 'Failed to start multi-screen mode', details: error.message });
+                } else {
+                    res.json({ message: 'Multi-screen mode started successfully' });
+                }
+            });
         });
     });
 

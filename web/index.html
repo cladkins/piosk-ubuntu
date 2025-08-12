@@ -16,13 +16,35 @@
           <input  id="new-url" type="text"   class="form-control form-control-lg" placeholder="...add URLs of webpages as screens">
           <button id="add-url" type="button" class="btn btn-secondary">ADD</button>
           <button id="execute" type="button" class="btn btn-danger">APPLY <span class="align-text-bottom">⏻</span></button>
-          <a href="/switcher.html" class="btn btn-outline-secondary">Switcher</a>
-          <a href="/multiscreen.html" class="btn btn-outline-info">Multi-Screen</a>
+          <div class="btn-group" role="group">
+            <a href="/switcher.html" class="btn btn-outline-secondary">Switcher</a>
+            <a href="/multiscreen.html" class="btn btn-outline-info">Multi-Screen</a>
+          </div>
         </div>
       </div>
     </nav>
 
-    <div id="urls" class="container-md my-5">
+    <div class="container-md my-4">
+      <!-- Mode Control -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Kiosk Mode Control</h5>
+            </div>
+            <div class="card-body">
+              <div class="btn-group me-3" role="group">
+                <button type="button" class="btn btn-success" id="start-single">Start Single-Screen</button>
+                <button type="button" class="btn btn-danger" id="stop-single">Stop Kiosk</button>
+              </div>
+              <span class="text-muted">Configure URLs below, then start kiosk mode</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="urls" class="container-md">
       <ul class="list-group list-group-flush"></ul>
     </div>
 
