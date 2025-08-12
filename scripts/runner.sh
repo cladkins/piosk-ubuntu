@@ -53,10 +53,19 @@ echo "Found X authority file: $XAUTH_FILE"
 sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium --kiosk --remote-debugging-port=9222 "$URLS" &
 
 # Give Chromium a moment to start up
-sleep 3
+sleep 5
 
-# Force fullscreen using xdotool (press F11)
-sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --name "Chromium" windowactivate --sync key F11
+# Force fullscreen using multiple approaches
+echo "Attempting to force fullscreen..."
+
+# Method 1: Find and maximize all Chromium windows
+sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --class "chromium" windowactivate --sync windowstate --toggle FULLSCREEN 2>/dev/null || true
+
+# Method 2: Alternative F11 approach with better window targeting
+sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --class "chromium" windowactivate --sync key F11 2>/dev/null || true
+
+# Method 3: Maximize and remove decorations
+sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --class "chromium" windowactivate --sync key ctrl+shift+f 2>/dev/null || true
 
 # Keep the script running
 wait

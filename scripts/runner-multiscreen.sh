@@ -123,13 +123,21 @@ EOF
     echo "$(date): Chromium started with PID: $CHROMIUM_PID"
     
     # Give it a moment to start and check if it's still running
-    sleep 3
+    sleep 5
     if kill -0 $CHROMIUM_PID 2>/dev/null; then
         echo "$(date): Chromium process $CHROMIUM_PID is running successfully on $DISPLAY_ID"
         
-        # Force fullscreen using xdotool after browser has started
-        echo "$(date): Forcing fullscreen for $DISPLAY_ID"
-        sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --name "Chromium" windowactivate --sync key F11 2>/dev/null || true
+        # Force fullscreen using multiple approaches
+        echo "$(date): Attempting to force fullscreen for $DISPLAY_ID"
+        
+        # Method 1: Find and set fullscreen state
+        sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --class "chromium" windowactivate --sync windowstate --toggle FULLSCREEN 2>/dev/null || true
+        
+        # Method 2: F11 key press
+        sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --class "chromium" windowactivate --sync key F11 2>/dev/null || true
+        
+        # Method 3: Chromium fullscreen shortcut
+        sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --class "chromium" windowactivate --sync key ctrl+shift+f 2>/dev/null || true
     else
         echo "$(date): ERROR: Chromium process $CHROMIUM_PID exited immediately on $DISPLAY_ID"
         echo "$(date): Chromium log output:"
