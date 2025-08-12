@@ -114,7 +114,7 @@ app.get('/system/check', (req, res) => {
 // Single-screen mode control
 app.post('/single-screen/start', (req, res) => {
   // Stop any existing chromium processes first
-  exe('pkill -f "chromium.*remote-debugging-port=9222" 2>/dev/null || true', (err1) => {
+  exe('pkill -f "chromium.*remote-debugging-port" 2>/dev/null || true', (err1) => {
     // Save the current mode state
     nfs.writeFile(path.join(BASE_DIR, 'last-mode.txt'), 'single-screen', () => {})
     
@@ -130,7 +130,7 @@ app.post('/single-screen/start', (req, res) => {
 })
 
 app.post('/single-screen/stop', (req, res) => {
-  exe('pkill -f "chromium.*remote-debugging-port=9222" 2>/dev/null || true', (err, stdout, stderr) => {
+  exe('pkill -f "chromium.*remote-debugging-port" 2>/dev/null || true', (err, stdout, stderr) => {
     res.json({ message: 'Single-screen mode stopped' })
   })
 })

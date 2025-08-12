@@ -85,7 +85,7 @@ function addMultiScreenRoutes(app) {
             const urls = config.urls.map(u => u.url).join(' ');
             const port = 9222 + Math.floor(Math.random() * 100);
             
-            const command = `DISPLAY=${display} XAUTHORITY=\${XAUTHORITY:-$HOME/.Xauthority} nohup snap run chromium --kiosk --remote-debugging-port=${port} --user-data-dir=/tmp/piosk-${display} --no-sandbox ${urls} > /tmp/piosk-${display}.log 2>&1 & echo $! > /tmp/piosk-${display}.pid`;
+            const command = `DISPLAY=${display} XAUTHORITY=\${XAUTHORITY:-$HOME/.Xauthority} nohup snap run chromium --start-fullscreen --start-maximized --kiosk --disable-infobars --disable-extensions --disable-plugins --disable-translate --disable-default-apps --disable-notifications --disable-popup-blocking --disable-prompt-on-repost --disable-hang-monitor --disable-features=TranslateUI --disable-ipc-flooding-protection --no-first-run --no-default-browser-check --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-features=VizDisplayCompositor --autoplay-policy=no-user-gesture-required --remote-debugging-port=${port} --user-data-dir=/tmp/piosk-${display} ${urls} > /tmp/piosk-${display}.log 2>&1 & echo $! > /tmp/piosk-${display}.pid`;
             
             exec(command, (error, stdout, stderr) => {
                 if (error) {
@@ -136,7 +136,7 @@ function addMultiScreenRoutes(app) {
         fs.writeFile(path.join(BASE_DIR, 'last-mode.txt'), 'multi-screen', () => {})
         
         // First stop single-screen mode and switcher to avoid conflicts
-        exec('pkill -f "chromium.*kiosk" && systemctl --user stop piosk-switcher 2>/dev/null || true', (error1) => {
+        exec('pkill -f "chromium.*remote-debugging-port" && systemctl --user stop piosk-switcher 2>/dev/null || true', (error1) => {
             console.log(`${new Date().toISOString()}: Cleanup completed, starting multi-screen script`);
             
             // Now start multi-screen mode
@@ -160,7 +160,7 @@ function addMultiScreenRoutes(app) {
 
     // Stop all screens
     app.post('/multiscreen/stop-all', (req, res) => {
-        exec('pkill -f "chromium.*kiosk"', (error, stdout, stderr) => {
+        exec('pkill -f "chromium.*remote-debugging-port"', (error, stdout, stderr) => {
             // Clean up PID files
             exec('rm -f /tmp/piosk-*.pid', () => {
                 res.json({ message: 'All screens stopped' });

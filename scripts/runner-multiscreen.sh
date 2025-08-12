@@ -53,7 +53,7 @@ fi
 echo "$(date): Final display list: $DISPLAYS"
 
 # First, stop any existing single-screen chromium
-pkill -f "chromium.*kiosk" 2>/dev/null || true
+pkill -f "chromium.*remote-debugging-port" 2>/dev/null || true
 sleep 2
 
 # Counter for debug ports (avoid conflict with single-screen mode)

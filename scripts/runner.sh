@@ -67,9 +67,6 @@ exec sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium 
   --disable-ipc-flooding-protection \
   --no-first-run \
   --no-default-browser-check \
-  --disable-default-apps \
-  --disable-popup-blocking \
-  --disable-translate \
   --disable-background-timer-throttling \
   --disable-renderer-backgrounding \
   --disable-backgrounding-occluded-windows \
