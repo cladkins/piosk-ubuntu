@@ -80,15 +80,17 @@ $(document).ready(() => {
         let message = 'System Check Results:\n\n'
         data.checks.forEach(check => {
           if (check.installed !== undefined) {
-            message += `${check.name}: ${check.installed ? '✓ Installed' : '✗ Not installed'}\n`
+            const status = check.installed ? '✓ Installed' : '✗ Not installed'
+            const details = check.path || check.details || check.value || ''
+            message += `${check.name}: ${status} ${details}\n`
           } else {
             message += `${check.name}: ${check.value}\n`
           }
         })
         piosk.showAlert(`<pre>${message}</pre>`, 'info')
       })
-      .fail(() => {
-        piosk.showAlert('Failed to check system status', 'danger')
+      .fail((xhr) => {
+        piosk.showAlert('Failed to check system status: ' + (xhr.responseText || xhr.statusText), 'danger')
       })
   })
 

@@ -5,6 +5,7 @@ let multiscreen = {
         document.getElementById('startMulti').addEventListener('click', () => this.startMultiScreen());
         document.getElementById('stopMulti').addEventListener('click', () => this.stopMultiScreen());
         document.getElementById('detectDisplays').addEventListener('click', () => this.detectDisplays());
+        document.getElementById('system-check').addEventListener('click', () => this.systemCheck());
     },
 
     async detectDisplays() {
@@ -151,6 +152,26 @@ https://weather.com</textarea>
         } catch (error) {
             console.error('Error stopping screens:', error);
             this.showAlert('Failed to stop screens', 'danger');
+        }
+    },
+
+    async systemCheck() {
+        try {
+            const response = await fetch('/system/check');
+            const data = await response.json();
+            let message = 'System Check Results:\n\n';
+            data.checks.forEach(check => {
+                if (check.installed !== undefined) {
+                    const status = check.installed ? '✓ Installed' : '✗ Not installed';
+                    const details = check.path || check.details || check.value || '';
+                    message += `${check.name}: ${status} ${details}\n`;
+                } else {
+                    message += `${check.name}: ${check.value}\n`;
+                }
+            });
+            this.showAlert(`<pre>${message}</pre>`, 'info');
+        } catch (error) {
+            this.showAlert('Failed to check system status: ' + error.message, 'danger');
         }
     },
 

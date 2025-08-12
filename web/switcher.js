@@ -101,6 +101,9 @@ let switcher = {
     // Action buttons
     document.getElementById('apply-settings-btn').addEventListener('click', () => this.applySettings());
     document.getElementById('refresh-status-btn').addEventListener('click', () => this.loadStatus());
+    
+    // System check button
+    document.getElementById('system-check').addEventListener('click', () => this.systemCheck());
   },
   
   // Start switcher
@@ -209,6 +212,28 @@ let switcher = {
       })
       .catch(error => {
         this.showAlert('Error applying settings: ' + error.message, 'danger');
+      });
+  },
+  
+  // System check
+  systemCheck() {
+    fetch('/system/check')
+      .then(response => response.json())
+      .then(data => {
+        let message = 'System Check Results:\n\n';
+        data.checks.forEach(check => {
+          if (check.installed !== undefined) {
+            const status = check.installed ? '✓ Installed' : '✗ Not installed';
+            const details = check.path || check.details || check.value || '';
+            message += `${check.name}: ${status} ${details}\n`;
+          } else {
+            message += `${check.name}: ${check.value}\n`;
+          }
+        });
+        this.showAlert(`<pre>${message}</pre>`, 'info');
+      })
+      .catch(error => {
+        this.showAlert('Failed to check system status: ' + error.message, 'danger');
       });
   },
   

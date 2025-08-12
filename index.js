@@ -77,23 +77,34 @@ app.post('/switcher/restart', (req, res) => {
 // System check endpoint
 app.get('/system/check', (req, res) => {
   const checks = []
+  let completed = 0
+  const total = 4
+  
+  const checkComplete = () => {
+    completed++
+    if (completed === total) {
+      res.json({ checks })
+    }
+  }
   
   exe('command -v snap', (err1, stdout1) => {
-    checks.push({ name: 'snap', installed: !err1, version: err1 ? null : stdout1.trim() })
-    
-    exe('snap list chromium', (err2, stdout2) => {
-      checks.push({ name: 'chromium', installed: !err2, version: err2 ? null : stdout2.split('\n')[1] })
-      
-      exe('command -v jq', (err3, stdout3) => {
-        checks.push({ name: 'jq', installed: !err3, version: err3 ? null : stdout3.trim() })
-        
-        exe('echo $DISPLAY', (err4, stdout4) => {
-          checks.push({ name: 'display', value: stdout4.trim() || 'Not set' })
-          
-          res.json({ checks })
-        })
-      })
-    })
+    checks.push({ name: 'snap', installed: !err1, path: err1 ? 'Not found' : stdout1.trim() })
+    checkComplete()
+  })
+  
+  exe('snap list chromium', (err2, stdout2) => {
+    checks.push({ name: 'chromium', installed: !err2, details: err2 ? 'Not installed' : 'Installed' })
+    checkComplete()
+  })
+  
+  exe('command -v jq', (err3, stdout3) => {
+    checks.push({ name: 'jq', installed: !err3, path: err3 ? 'Not found' : stdout3.trim() })
+    checkComplete()
+  })
+  
+  exe('echo $DISPLAY', (err4, stdout4) => {
+    checks.push({ name: 'DISPLAY', value: stdout4.trim() || 'Not set' })
+    checkComplete()
   })
 })
 
