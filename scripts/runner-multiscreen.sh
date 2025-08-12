@@ -89,12 +89,22 @@ EOF
     echo "$(date): Starting browser on $DISPLAY_ID with URLs: $URLS"
     echo "$(date): Using same method as working single-screen script"
     
-    # Use the same command that works for single-screen, just change the display and port
-    sudo -u "$REAL_USER" DISPLAY="$DISPLAY_ID" XAUTHORITY="$XAUTH_FILE" nohup snap run chromium \
+    # Use display :0 for all browsers (same as single-screen), but with window positioning
+    # Calculate monitor positioning - assume monitors are side-by-side
+    if [ "$DISPLAY_ID" = ":0" ]; then
+        WINDOW_POSITION="--window-position=0,0"
+    else
+        # Place second browser on second monitor (assume 1920px width for first monitor)
+        WINDOW_POSITION="--window-position=1920,0"
+    fi
+    
+    # Use display :0 for all (the working display), just different windows and ports
+    sudo -u "$REAL_USER" DISPLAY=":0" XAUTHORITY="$XAUTH_FILE" nohup snap run chromium \
         --kiosk \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
         --no-sandbox \
+        $WINDOW_POSITION \
         $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     
     CHROMIUM_PID=$!
