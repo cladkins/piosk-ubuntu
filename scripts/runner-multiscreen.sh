@@ -110,7 +110,14 @@ EOF
     echo "$(date): Extra flags for $DISPLAY_ID: $EXTRA_FLAGS"
     
     sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
-        --kiosk \
+        --start-fullscreen \
+        --start-maximized \
+        --disable-infobars \
+        --disable-extensions \
+        --disable-plugins \
+        --disable-translate \
+        --disable-default-apps \
+        --no-first-run \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
         $EXTRA_FLAGS \
@@ -123,33 +130,9 @@ EOF
     echo "$(date): Chromium started with PID: $CHROMIUM_PID"
     
     # Give it a moment to start and check if it's still running
-    sleep 5
+    sleep 2
     if kill -0 $CHROMIUM_PID 2>/dev/null; then
         echo "$(date): Chromium process $CHROMIUM_PID is running successfully on $DISPLAY_ID"
-        
-        # Force fullscreen using multiple approaches - target the specific window by PID
-        echo "$(date): Attempting to force fullscreen for $DISPLAY_ID (PID: $CHROMIUM_PID)"
-        
-        # Get the window ID for this specific Chromium process
-        WINDOW_ID=$(sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --pid $CHROMIUM_PID 2>/dev/null | head -1)
-        
-        if [ -n "$WINDOW_ID" ]; then
-            echo "$(date): Found window ID: $WINDOW_ID for PID: $CHROMIUM_PID"
-            
-            # Method 1: Direct window state manipulation on specific window
-            sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool windowactivate --sync $WINDOW_ID windowstate --toggle FULLSCREEN 2>/dev/null || true
-            
-            # Method 2: F11 key press on specific window
-            sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool windowactivate --sync $WINDOW_ID key F11 2>/dev/null || true
-            
-            # Method 3: Chromium fullscreen shortcut on specific window
-            sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool windowactivate --sync $WINDOW_ID key ctrl+shift+f 2>/dev/null || true
-        else
-            echo "$(date): Could not find window ID for PID: $CHROMIUM_PID, trying fallback methods"
-            
-            # Fallback: Try to target by process name and user data directory
-            sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --onlyvisible --class "chromium" windowactivate --sync key F11 2>/dev/null || true
-        fi
     else
         echo "$(date): ERROR: Chromium process $CHROMIUM_PID exited immediately on $DISPLAY_ID"
         echo "$(date): Chromium log output:"
