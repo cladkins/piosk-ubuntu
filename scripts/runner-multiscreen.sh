@@ -113,7 +113,6 @@ EOF
         --kiosk \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
-        --no-sandbox \
         $EXTRA_FLAGS \
         $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     
@@ -124,9 +123,13 @@ EOF
     echo "$(date): Chromium started with PID: $CHROMIUM_PID"
     
     # Give it a moment to start and check if it's still running
-    sleep 2
+    sleep 3
     if kill -0 $CHROMIUM_PID 2>/dev/null; then
         echo "$(date): Chromium process $CHROMIUM_PID is running successfully on $DISPLAY_ID"
+        
+        # Force fullscreen using xdotool after browser has started
+        echo "$(date): Forcing fullscreen for $DISPLAY_ID"
+        sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" xdotool search --name "Chromium" windowactivate --sync key F11 2>/dev/null || true
     else
         echo "$(date): ERROR: Chromium process $CHROMIUM_PID exited immediately on $DISPLAY_ID"
         echo "$(date): Chromium log output:"
