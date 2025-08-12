@@ -6,8 +6,15 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Use /opt/piosk if it exists (installed system), otherwise use project root
+if [ -d "/opt/piosk" ]; then
+    BASE_DIR="/opt/piosk"
+else
+    BASE_DIR="$PROJECT_ROOT"
+fi
+
 # Check for last mode state file
-LAST_MODE_FILE="$PROJECT_ROOT/last-mode.txt"
+LAST_MODE_FILE="$BASE_DIR/last-mode.txt"
 
 if [ -f "$LAST_MODE_FILE" ]; then
     LAST_MODE=$(cat "$LAST_MODE_FILE")
