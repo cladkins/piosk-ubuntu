@@ -8,7 +8,7 @@ count_connected_displays() {
         # Check each card directory for connected status
         for status_file in /sys/class/drm/card*/status; do
             if [ -f "$status_file" ]; then
-                if grep -q "connected" "$status_file" 2>/dev/null; then
+                if grep -q "^connected" "$status_file" 2>/dev/null; then
                     count=$((count + 1))
                 fi
             fi
@@ -18,7 +18,8 @@ count_connected_displays() {
         if [ "$count" -eq 0 ]; then
             for status_file in /sys/class/drm/card*-*/status; do
                 if [ -f "$status_file" ]; then
-                    if grep -q "connected" "$status_file" 2>/dev/null; then
+                    # Only count "connected" not "disconnected"
+                    if grep -q "^connected" "$status_file" 2>/dev/null; then
                         count=$((count + 1))
                     fi
                 fi
