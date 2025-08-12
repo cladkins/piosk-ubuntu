@@ -113,8 +113,8 @@ app.get('/system/check', (req, res) => {
 
 // Single-screen mode control
 app.post('/single-screen/start', (req, res) => {
-  // Stop multi-screen mode first
-  exe('pkill -f "chromium.*kiosk" 2>/dev/null || true', (err1) => {
+  // Stop any existing chromium processes first
+  exe('pkill -f "chromium.*remote-debugging-port=9222" 2>/dev/null || true', (err1) => {
     // Start single-screen mode
     exe(`${path.join(BASE_DIR, 'scripts', 'runner.sh')} > /tmp/piosk-single.log 2>&1 &`, (err, stdout, stderr) => {
       if (err) {
@@ -127,7 +127,7 @@ app.post('/single-screen/start', (req, res) => {
 })
 
 app.post('/single-screen/stop', (req, res) => {
-  exe('pkill -f "chromium.*kiosk" 2>/dev/null || true', (err, stdout, stderr) => {
+  exe('pkill -f "chromium.*remote-debugging-port=9222" 2>/dev/null || true', (err, stdout, stderr) => {
     res.json({ message: 'Single-screen mode stopped' })
   })
 })

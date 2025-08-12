@@ -50,4 +50,4 @@ fi
 echo "Found X authority file: $XAUTH_FILE"
 
 # Use snap Chromium with remote debugging enabled, run as proper user
-exec sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium --start-fullscreen --app="$URLS" --remote-debugging-port=9222 --no-sandbox
+exec sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium --kiosk --remote-debugging-port=9222 "$URLS"
