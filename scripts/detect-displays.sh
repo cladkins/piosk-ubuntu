@@ -4,7 +4,7 @@
 # Count actual connected hardware displays
 count_connected_displays() {
     if [ -d "/sys/class/drm" ]; then
-        find /sys/class/drm -name "card*-*" -path "*/status" -exec cat {} \; 2>/dev/null | grep -c "connected"
+        find /sys/class/drm -name "status" -exec cat {} \; 2>/dev/null | grep -c "connected"
     else
         echo "1"
     fi
