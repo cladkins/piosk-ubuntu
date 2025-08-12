@@ -24,8 +24,9 @@ if ! command -v jq >/dev/null 2>&1; then
     exit 1
 fi
 
-# Get URLs from config file
-URLS=$(jq -r '.urls | map(.url) | join(" ")' "$PROJECT_ROOT/config.json")
+# Get URLs from config file - for single screen, just use the first URL
+FIRST_URL=$(jq -r '.urls[0].url' "$PROJECT_ROOT/config.json")
+URLS="$FIRST_URL"
 
 if [ -z "$URLS" ] || [ "$URLS" = "null" ]; then
     echo "Error: No URLs found in config.json"
