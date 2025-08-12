@@ -34,5 +34,10 @@ fi
 
 echo "Starting Chromium with URLs: $URLS"
 
+# Find the actual logged-in user and their X authority
+REAL_USER=$(who | awk 'NR==1{print $1}')
+REAL_HOME=$(eval echo ~$REAL_USER)
+XAUTH_FILE="$REAL_HOME/.Xauthority"
+
 # Use snap Chromium with remote debugging enabled, run as proper user
-exec sudo -u $USER DISPLAY=:0 XAUTHORITY="$HOME/.Xauthority" snap run chromium --kiosk --remote-debugging-port=9222 --no-sandbox $URLS 
+exec sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium --kiosk --remote-debugging-port=9222 --no-sandbox $URLS 

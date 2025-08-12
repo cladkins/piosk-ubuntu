@@ -65,8 +65,13 @@ EOF
     # Start browser on this display with proper X11 authorization
     echo "Starting browser on $DISPLAY_ID with URLs: $URLS"
     
+    # Find the actual logged-in user and their X authority
+    REAL_USER=$(who | awk 'NR==1{print $1}')
+    REAL_HOME=$(eval echo ~$REAL_USER)
+    XAUTH_FILE="$REAL_HOME/.Xauthority"
+    
     # Run as the logged-in user with proper X11 access
-    sudo -u $USER DISPLAY="$DISPLAY_ID" XAUTHORITY="$HOME/.Xauthority" nohup snap run chromium \
+    sudo -u "$REAL_USER" DISPLAY="$DISPLAY_ID" XAUTHORITY="$XAUTH_FILE" nohup snap run chromium \
         --kiosk \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
