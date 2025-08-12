@@ -18,6 +18,7 @@ This is an **Ubuntu adaptation** of the original [PiOSK project](https://github.
 
 - **Automatic Setup**: Single script installation for Ubuntu
 - **Web Dashboard**: Manage URLs through a web interface
+- **Multi-Screen Support**: Run separate browsers on multiple displays with different content
 - **Auto-login**: Configures automatic login for your display manager
 - **Tab Rotation**: Automatically cycles through configured web pages
 - **Switcher Control**: Web interface to control tab switching timing and enable/disable with immediate effect
@@ -142,6 +143,66 @@ To restore normal power management behavior:
 # Remove PiOSK completely (includes power settings)
 sudo /opt/piosk/scripts/cleanup.sh
 ```
+
+## Multi-Screen Support
+
+PiOSK now supports multiple displays, allowing you to run separate browsers on each connected monitor with different web content.
+
+### Features
+- **Automatic Display Detection**: Detects all connected monitors
+- **Per-Screen Configuration**: Configure different URLs for each display
+- **Independent Control**: Start, stop, and manage each screen individually
+- **Web-Based Management**: Easy-to-use web interface for multi-screen control
+
+### Accessing Multi-Screen Controls
+1. Visit the main dashboard at `http://<your-ubuntu-ip>/`
+2. Click the "Multi-Screen" button in the navigation bar
+3. Or go directly to `http://<your-ubuntu-ip>/multiscreen.html`
+
+### Using Multi-Screen Mode
+
+#### Basic Setup
+1. **Detect Displays**: Click "Detect Displays" to scan for connected monitors
+2. **Configure Screens**: Set different URLs for each detected display
+3. **Start Multi-Screen**: Click "Start Multi-Screen" to launch all screens simultaneously
+
+#### Individual Screen Management
+- **Configure**: Enter URLs for each screen (one per line in the text area)
+- **Save**: Save configuration for specific screens
+- **Start/Stop**: Control individual screens independently
+
+#### Command Line Usage
+```bash
+# Detect available displays
+sudo /opt/piosk/scripts/detect-displays.sh
+
+# Start multi-screen mode
+sudo /opt/piosk/scripts/runner-multiscreen.sh
+
+# Stop all screens
+sudo pkill -f "chromium.*piosk"
+```
+
+### Multi-Screen Configuration
+Screen configurations are stored in `/opt/piosk/screens/` as JSON files:
+- `:0.json` - Configuration for primary display
+- `:1.json` - Configuration for secondary display
+- etc.
+
+Example screen configuration:
+```json
+{
+  "urls": [
+    {"url": "https://time.is"},
+    {"url": "https://weather.com"}
+  ]
+}
+```
+
+### Switching Between Modes
+- **Single-Screen Mode**: Use the original dashboard and runner
+- **Multi-Screen Mode**: Use the multi-screen interface and runner
+- Both modes can coexist and be switched between as needed
 
 ## Switcher Control
 

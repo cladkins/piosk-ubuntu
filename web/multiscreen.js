@@ -1,0 +1,161 @@
+let multiscreen = {
+    displays: [],
+
+    init() {
+        document.getElementById('startMulti').addEventListener('click', () => this.startMultiScreen());
+        document.getElementById('stopMulti').addEventListener('click', () => this.stopMultiScreen());
+        document.getElementById('detectDisplays').addEventListener('click', () => this.detectDisplays());
+    },
+
+    async detectDisplays() {
+        try {
+            const response = await fetch('/multiscreen/detect');
+            const data = await response.json();
+            this.displays = data.displays || [];
+            this.renderDisplays();
+            this.renderConfigs();
+        } catch (error) {
+            console.error('Error detecting displays:', error);
+            this.showAlert('Failed to detect displays', 'danger');
+        }
+    },
+
+    renderDisplays() {
+        const displayList = document.getElementById('displayList');
+        if (this.displays.length === 0) {
+            displayList.innerHTML = '<p class="text-muted">No displays detected</p>';
+            return;
+        }
+
+        const html = this.displays.map(display => 
+            `<span class="badge bg-primary me-1">${display}</span>`
+        ).join('');
+        displayList.innerHTML = html;
+    },
+
+    renderConfigs() {
+        const container = document.getElementById('screenConfigs');
+        if (this.displays.length === 0) {
+            container.innerHTML = '<p class="text-muted">Detect displays first to configure screens</p>';
+            return;
+        }
+
+        const html = this.displays.map(display => `
+            <div class="mb-3">
+                <h6>Screen: ${display}</h6>
+                <div class="row">
+                    <div class="col-md-8">
+                        <textarea class="form-control" id="urls-${display}" rows="3" 
+                                  placeholder="Enter URLs (one per line)">https://time.is
+https://weather.com</textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-sm btn-primary" onclick="multiscreen.saveScreen('${display}')">Save</button>
+                        <button class="btn btn-sm btn-success" onclick="multiscreen.startScreen('${display}')">Start</button>
+                        <button class="btn btn-sm btn-danger" onclick="multiscreen.stopScreen('${display}')">Stop</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        container.innerHTML = html;
+    },
+
+    async saveScreen(display) {
+        const urlsText = document.getElementById(`urls-${display}`).value;
+        const urls = urlsText.split('\n').filter(url => url.trim()).map(url => ({ url: url.trim() }));
+        
+        try {
+            const response = await fetch(`/multiscreen/config/${display}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ urls })
+            });
+            
+            if (response.ok) {
+                this.showAlert(`Configuration saved for ${display}`, 'success');
+            } else {
+                throw new Error('Save failed');
+            }
+        } catch (error) {
+            console.error('Error saving screen config:', error);
+            this.showAlert(`Failed to save configuration for ${display}`, 'danger');
+        }
+    },
+
+    async startScreen(display) {
+        try {
+            const response = await fetch(`/multiscreen/start/${display}`, { method: 'POST' });
+            if (response.ok) {
+                this.showAlert(`Started screen ${display}`, 'success');
+            } else {
+                throw new Error('Start failed');
+            }
+        } catch (error) {
+            console.error('Error starting screen:', error);
+            this.showAlert(`Failed to start screen ${display}`, 'danger');
+        }
+    },
+
+    async stopScreen(display) {
+        try {
+            const response = await fetch(`/multiscreen/stop/${display}`, { method: 'POST' });
+            if (response.ok) {
+                this.showAlert(`Stopped screen ${display}`, 'success');
+            } else {
+                throw new Error('Stop failed');
+            }
+        } catch (error) {
+            console.error('Error stopping screen:', error);
+            this.showAlert(`Failed to stop screen ${display}`, 'danger');
+        }
+    },
+
+    async startMultiScreen() {
+        try {
+            const response = await fetch('/multiscreen/start-all', { method: 'POST' });
+            if (response.ok) {
+                this.showAlert('Multi-screen mode started', 'success');
+            } else {
+                throw new Error('Start failed');
+            }
+        } catch (error) {
+            console.error('Error starting multi-screen:', error);
+            this.showAlert('Failed to start multi-screen mode', 'danger');
+        }
+    },
+
+    async stopMultiScreen() {
+        try {
+            const response = await fetch('/multiscreen/stop-all', { method: 'POST' });
+            if (response.ok) {
+                this.showAlert('All screens stopped', 'success');
+            } else {
+                throw new Error('Stop failed');
+            }
+        } catch (error) {
+            console.error('Error stopping screens:', error);
+            this.showAlert('Failed to stop screens', 'danger');
+        }
+    },
+
+    showAlert(message, type) {
+        // Simple alert for now
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const alertHtml = `<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+        
+        document.querySelector('.container').insertAdjacentHTML('afterbegin', alertHtml);
+        
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => {
+            const alert = document.querySelector('.alert');
+            if (alert) alert.remove();
+        }, 3000);
+    }
+};
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', () => multiscreen.init());

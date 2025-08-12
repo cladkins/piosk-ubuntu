@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiOSK Multi-Screen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand">PiOSK Multi-Screen</span>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/">Dashboard</a>
+                <a class="nav-link" href="/switcher.html">Switcher</a>
+                <a class="nav-link active" href="/multiscreen.html">Multi-Screen</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Multi-Screen Control</h5>
+                    </div>
+                    <div class="card-body">
+                        <button id="startMulti" class="btn btn-success me-2">Start Multi-Screen</button>
+                        <button id="stopMulti" class="btn btn-danger me-2">Stop All Screens</button>
+                        <button id="detectDisplays" class="btn btn-info">Detect Displays</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Detected Displays</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="displayList">Click "Detect Displays" to scan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Screen Configuration</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="screenConfigs">
+                            <p class="text-muted">Detect displays first to configure screens</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="multiscreen.js"></script>
+</body>
+</html>

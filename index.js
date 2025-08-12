@@ -73,4 +73,13 @@ app.post('/switcher/restart', (req, res) => {
   })
 })
 
+// Add multi-screen functionality
+try {
+  const { addMultiScreenRoutes } = require('./multiscreen-api')
+  addMultiScreenRoutes(app)
+  console.log('Multi-screen functionality loaded')
+} catch (error) {
+  console.log('Multi-screen functionality not available:', error.message)
+}
+
 app.listen(3000, console.error)
