@@ -8,7 +8,7 @@ SCREEN_DIR="/opt/piosk/screens"
 mkdir -p "$SCREEN_DIR"
 
 # Get available displays
-DISPLAYS=$(./scripts/detect-displays.sh)
+DISPLAYS=$(/opt/piosk/scripts/detect-displays.sh)
 
 # Counter for debug ports
 PORT=9222
