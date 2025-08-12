@@ -98,27 +98,27 @@ EOF
     echo "$(date): Starting browser on $DISPLAY_ID with URLs: $URLS"
     echo "$(date): Using same method as working single-screen script"
     
-    # For multi-monitor kiosk mode, we need different approach
+    # Use the exact same flags as working single-screen, just different positioning
+    echo "$(date): Starting browser with exact same flags as single-screen"
+    
     if [ "$DISPLAY_ID" = ":0" ]; then
-        # First monitor - use pure kiosk mode
-        EXTRA_FLAGS=""
+        # First browser - no positioning (let it go where it wants)
+        sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
+            --kiosk \
+            --remote-debugging-port=$PORT \
+            --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
+            --no-sandbox \
+            $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     else
-        # Second monitor - start on different position first, then go fullscreen
-        EXTRA_FLAGS="--new-window --window-position=1920,0"
+        # Second browser - try to position it on second monitor
+        sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
+            --kiosk \
+            --remote-debugging-port=$PORT \
+            --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
+            --no-sandbox \
+            --window-position=1920,0 \
+            $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     fi
-    
-    echo "$(date): Starting browser in kiosk mode"
-    echo "$(date): Extra flags for $DISPLAY_ID: $EXTRA_FLAGS"
-    
-    sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
-        --kiosk \
-        --remote-debugging-port=$PORT \
-        --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
-        --no-sandbox \
-        --disable-features=TranslateUI \
-        --disable-ipc-flooding-protection \
-        $EXTRA_FLAGS \
-        $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     
     CHROMIUM_PID=$!
     
