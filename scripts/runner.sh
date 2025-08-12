@@ -49,8 +49,15 @@ fi
 
 echo "Found X authority file: $XAUTH_FILE"
 
-# Use snap Chromium in kiosk mode
+# Use snap Chromium with proper fullscreen flags
 exec sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
-  --kiosk \
+  --start-fullscreen \
+  --start-maximized \
+  --disable-infobars \
+  --disable-extensions \
+  --disable-plugins \
+  --disable-translate \
+  --disable-default-apps \
+  --no-first-run \
   --remote-debugging-port=9222 \
   "$URLS"

@@ -110,7 +110,14 @@ EOF
     echo "$(date): Extra flags for $DISPLAY_ID: $EXTRA_FLAGS"
     
     sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
-        --kiosk \
+        --start-fullscreen \
+        --start-maximized \
+        --disable-infobars \
+        --disable-extensions \
+        --disable-plugins \
+        --disable-translate \
+        --disable-default-apps \
+        --no-first-run \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
         $EXTRA_FLAGS \
