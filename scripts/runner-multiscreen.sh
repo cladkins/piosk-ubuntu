@@ -81,47 +81,15 @@ EOF
     # Start browser on this display with proper X11 authorization
     echo "$(date): Starting browser on $DISPLAY_ID with URLs: $URLS"
     
-    # Find the actual logged-in user and their X authority
+    # Use the EXACT same approach as the working single-screen script
     REAL_USER=$(who | awk 'NR==1{print $1}')
     REAL_HOME=$(eval echo ~$REAL_USER)
+    XAUTH_FILE="$REAL_HOME/.Xauthority"
     
-    # Try multiple locations for X authority file
-    if [ -f "$REAL_HOME/.Xauthority" ]; then
-        XAUTH_FILE="$REAL_HOME/.Xauthority"
-    elif [ -f "/tmp/.X11-unix/X0" ] && [ -f "/run/user/$(id -u $REAL_USER)/gdm/Xauthority" ]; then
-        XAUTH_FILE="/run/user/$(id -u $REAL_USER)/gdm/Xauthority"
-    elif [ -f "/var/lib/gdm3/:0.Xauth" ]; then
-        XAUTH_FILE="/var/lib/gdm3/:0.Xauth"
-    else
-        # Try to find any Xauthority file
-        XAUTH_FILE=$(find /tmp /run -name "*Xauth*" -o -name "*xauth*" 2>/dev/null | head -1)
-        if [ -z "$XAUTH_FILE" ]; then
-            XAUTH_FILE="$REAL_HOME/.Xauthority"  # fallback
-        fi
-    fi
+    echo "$(date): Starting browser on $DISPLAY_ID with URLs: $URLS"
+    echo "$(date): Using same method as working single-screen script"
     
-    echo "$(date): User detection results:"
-    echo "$(date):   REAL_USER=$REAL_USER"
-    echo "$(date):   REAL_HOME=$REAL_HOME"
-    echo "$(date):   XAUTH_FILE=$XAUTH_FILE"
-    echo "$(date):   XAUTH_FILE exists: $([ -f "$XAUTH_FILE" ] && echo "YES" || echo "NO")"
-    
-    # Check if we can access X11
-    echo "$(date): Testing X11 access..."
-    sudo -u "$REAL_USER" DISPLAY="$DISPLAY_ID" XAUTHORITY="$XAUTH_FILE" xset q > /tmp/x11-test-$DISPLAY_ID.log 2>&1
-    if [ $? -eq 0 ]; then
-        echo "$(date): X11 access test PASSED for $DISPLAY_ID"
-    else
-        echo "$(date): X11 access test FAILED for $DISPLAY_ID"
-        echo "$(date): X11 test output:"
-        cat /tmp/x11-test-$DISPLAY_ID.log | sed "s/^/$(date): /"
-    fi
-    
-    # Try alternative approach - run through user's systemd session
-    echo "$(date): Launching Chromium with command:"
-    echo "$(date):   Method 1: sudo -u \"$REAL_USER\" DISPLAY=\"$DISPLAY_ID\" XAUTHORITY=\"$XAUTH_FILE\""
-    
-    # First try: Direct sudo with X authority
+    # Use the same command that works for single-screen, just change the display and port
     sudo -u "$REAL_USER" DISPLAY="$DISPLAY_ID" XAUTHORITY="$XAUTH_FILE" nohup snap run chromium \
         --kiosk \
         --remote-debugging-port=$PORT \
@@ -130,16 +98,6 @@ EOF
         $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     
     CHROMIUM_PID=$!
-    
-    # If that fails quickly, try running through the user's session
-    sleep 1
-    if ! kill -0 $CHROMIUM_PID 2>/dev/null; then
-        echo "$(date): Method 1 failed, trying Method 2: systemd-run --uid"
-        systemd-run --uid="$REAL_USER" --gid="$(id -g $REAL_USER)" --setenv=DISPLAY="$DISPLAY_ID" --setenv=XAUTHORITY="$XAUTH_FILE" \
-            snap run chromium --kiosk --remote-debugging-port=$PORT --user-data-dir="/tmp/piosk-$DISPLAY_ID" --no-sandbox $URLS \
-            > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
-        CHROMIUM_PID=$!
-    fi
     
     # Save PID for later management  
     echo $CHROMIUM_PID > "/tmp/piosk-$DISPLAY_ID.pid"
