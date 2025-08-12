@@ -3,11 +3,35 @@
 
 # Count actual connected hardware displays
 count_connected_displays() {
+    local count=0
     if [ -d "/sys/class/drm" ]; then
-        find /sys/class/drm -name "status" -exec cat {} \; 2>/dev/null | grep -c "connected"
-    else
-        echo "1"
+        # Check each card directory for connected status
+        for status_file in /sys/class/drm/card*/status; do
+            if [ -f "$status_file" ]; then
+                if grep -q "connected" "$status_file" 2>/dev/null; then
+                    count=$((count + 1))
+                fi
+            fi
+        done
+        
+        # If we found nothing, check the card1-* format you have
+        if [ "$count" -eq 0 ]; then
+            for status_file in /sys/class/drm/card*-*/status; do
+                if [ -f "$status_file" ]; then
+                    if grep -q "connected" "$status_file" 2>/dev/null; then
+                        count=$((count + 1))
+                    fi
+                fi
+            done
+        fi
     fi
+    
+    # If still zero, default to 1
+    if [ "$count" -eq 0 ]; then
+        count=1
+    fi
+    
+    echo "$count"
 }
 
 # Get actual connected display count
