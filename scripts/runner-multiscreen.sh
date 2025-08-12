@@ -84,7 +84,21 @@ EOF
     # Find the actual logged-in user and their X authority
     REAL_USER=$(who | awk 'NR==1{print $1}')
     REAL_HOME=$(eval echo ~$REAL_USER)
-    XAUTH_FILE="$REAL_HOME/.Xauthority"
+    
+    # Try multiple locations for X authority file
+    if [ -f "$REAL_HOME/.Xauthority" ]; then
+        XAUTH_FILE="$REAL_HOME/.Xauthority"
+    elif [ -f "/tmp/.X11-unix/X0" ] && [ -f "/run/user/$(id -u $REAL_USER)/gdm/Xauthority" ]; then
+        XAUTH_FILE="/run/user/$(id -u $REAL_USER)/gdm/Xauthority"
+    elif [ -f "/var/lib/gdm3/:0.Xauth" ]; then
+        XAUTH_FILE="/var/lib/gdm3/:0.Xauth"
+    else
+        # Try to find any Xauthority file
+        XAUTH_FILE=$(find /tmp /run -name "*Xauth*" -o -name "*xauth*" 2>/dev/null | head -1)
+        if [ -z "$XAUTH_FILE" ]; then
+            XAUTH_FILE="$REAL_HOME/.Xauthority"  # fallback
+        fi
+    fi
     
     echo "$(date): User detection results:"
     echo "$(date):   REAL_USER=$REAL_USER"
@@ -103,10 +117,11 @@ EOF
         cat /tmp/x11-test-$DISPLAY_ID.log | sed "s/^/$(date): /"
     fi
     
-    # Run as the logged-in user with proper X11 access
+    # Try alternative approach - run through user's systemd session
     echo "$(date): Launching Chromium with command:"
-    echo "$(date):   sudo -u \"$REAL_USER\" DISPLAY=\"$DISPLAY_ID\" XAUTHORITY=\"$XAUTH_FILE\" snap run chromium --kiosk --remote-debugging-port=$PORT --user-data-dir=\"/tmp/piosk-$DISPLAY_ID\" --no-sandbox $URLS"
+    echo "$(date):   Method 1: sudo -u \"$REAL_USER\" DISPLAY=\"$DISPLAY_ID\" XAUTHORITY=\"$XAUTH_FILE\""
     
+    # First try: Direct sudo with X authority
     sudo -u "$REAL_USER" DISPLAY="$DISPLAY_ID" XAUTHORITY="$XAUTH_FILE" nohup snap run chromium \
         --kiosk \
         --remote-debugging-port=$PORT \
@@ -114,8 +129,19 @@ EOF
         --no-sandbox \
         $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     
-    # Save PID for later management
     CHROMIUM_PID=$!
+    
+    # If that fails quickly, try running through the user's session
+    sleep 1
+    if ! kill -0 $CHROMIUM_PID 2>/dev/null; then
+        echo "$(date): Method 1 failed, trying Method 2: systemd-run --uid"
+        systemd-run --uid="$REAL_USER" --gid="$(id -g $REAL_USER)" --setenv=DISPLAY="$DISPLAY_ID" --setenv=XAUTHORITY="$XAUTH_FILE" \
+            snap run chromium --kiosk --remote-debugging-port=$PORT --user-data-dir="/tmp/piosk-$DISPLAY_ID" --no-sandbox $URLS \
+            > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
+        CHROMIUM_PID=$!
+    fi
+    
+    # Save PID for later management  
     echo $CHROMIUM_PID > "/tmp/piosk-$DISPLAY_ID.pid"
     echo "$(date): Chromium started with PID: $CHROMIUM_PID"
     
