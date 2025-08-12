@@ -3,7 +3,7 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const SCREEN_DIR = '/opt/piosk/screens';
+const SCREEN_DIR = path.join(__dirname, 'screens');
 
 // Ensure screen directory exists
 if (!fs.existsSync(SCREEN_DIR)) {
@@ -13,7 +13,7 @@ if (!fs.existsSync(SCREEN_DIR)) {
 function addMultiScreenRoutes(app) {
     // Detect displays
     app.get('/multiscreen/detect', (req, res) => {
-        exec('DISPLAY=:0 /opt/piosk/scripts/detect-displays.sh', (error, stdout, stderr) => {
+        exec(`DISPLAY=:0 ${path.join(__dirname, 'scripts', 'detect-displays.sh')}`, (error, stdout, stderr) => {
             if (error) {
                 console.error('Display detection error:', error);
                 res.json({ displays: [':0'] }); // fallback
@@ -126,7 +126,7 @@ function addMultiScreenRoutes(app) {
         // First stop single-screen mode and switcher to avoid conflicts
         exec('pkill -f "chromium.*kiosk" && systemctl --user stop piosk-switcher 2>/dev/null || true', (error1) => {
             // Now start multi-screen mode
-            exec('/opt/piosk/scripts/runner-multiscreen.sh', (error, stdout, stderr) => {
+            exec(path.join(__dirname, 'scripts', 'runner-multiscreen.sh'), (error, stdout, stderr) => {
                 if (error) {
                     res.status(500).json({ error: 'Failed to start multi-screen mode', details: error.message });
                 } else {
@@ -138,7 +138,7 @@ function addMultiScreenRoutes(app) {
 
     // Stop all screens
     app.post('/multiscreen/stop-all', (req, res) => {
-        exec('pkill -f "chromium.*piosk"', (error, stdout, stderr) => {
+        exec('pkill -f "chromium.*kiosk"', (error, stdout, stderr) => {
             // Clean up PID files
             exec('rm -f /tmp/piosk-*.pid', () => {
                 res.json({ message: 'All screens stopped' });

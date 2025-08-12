@@ -3,12 +3,16 @@
 
 echo "Starting PiOSK multi-screen mode..."
 
+# Get script directory and project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
 # Directory for screen configs
-SCREEN_DIR="/opt/piosk/screens"
+SCREEN_DIR="$PROJECT_ROOT/screens"
 mkdir -p "$SCREEN_DIR"
 
 # Get available displays
-DISPLAYS=$(/opt/piosk/scripts/detect-displays.sh)
+DISPLAYS=$("$SCRIPT_DIR/detect-displays.sh")
 
 # First, stop any existing single-screen chromium
 pkill -f "chromium.*kiosk" 2>/dev/null || true
