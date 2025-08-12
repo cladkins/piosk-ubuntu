@@ -98,12 +98,23 @@ EOF
     echo "$(date): Starting browser on $DISPLAY_ID with URLs: $URLS"
     echo "$(date): Using same method as working single-screen script"
     
-    # Back to the version that was working with fullscreen
+    # Position browsers on different monitors - EXACT working version
+    if [ "$DISPLAY_ID" = ":0" ]; then
+        # First monitor - no extra flags
+        EXTRA_FLAGS=""
+    else
+        # Second monitor - position it on second screen
+        EXTRA_FLAGS="--new-window --window-position=1920,0"
+    fi
+    
+    echo "$(date): Extra flags for $DISPLAY_ID: $EXTRA_FLAGS"
+    
     sudo -u "$REAL_USER" DISPLAY=:0 XAUTHORITY="$XAUTH_FILE" snap run chromium \
         --kiosk \
         --remote-debugging-port=$PORT \
         --user-data-dir="/tmp/piosk-$DISPLAY_ID" \
         --no-sandbox \
+        $EXTRA_FLAGS \
         $URLS > "/tmp/piosk-$DISPLAY_ID.log" 2>&1 &
     
     CHROMIUM_PID=$!
