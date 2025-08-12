@@ -11,7 +11,8 @@
         <div class="container-md d-flex justify-content-between">
             <h1 class="my-1">Pi<span class="bg-danger mx-1 px-1 rounded">OSK</span> Multi-Screen</h1>
             <div>
-                <a href="/" class="btn btn-outline-secondary">← Back to Dashboard</a>
+                <a href="/" class="btn btn-outline-secondary">Dashboard</a>
+                <a href="/switcher.html" class="btn btn-outline-secondary ms-2">Switcher</a>
             </div>
         </div>
     </nav>
@@ -25,10 +26,10 @@
                     </div>
                     <div class="card-body">
                         <div class="btn-group" role="group">
-                            <button id="startMulti" class="btn btn-success">Start All Screens</button>
-                            <button id="stopMulti" class="btn btn-danger">Stop All Screens</button>
+                            <button type="button" class="btn btn-success" id="startMulti">Start All Screens</button>
+                            <button type="button" class="btn btn-danger" id="stopMulti">Stop All Screens</button>
                         </div>
-                        <button id="detectDisplays" class="btn btn-primary ms-2">Detect Displays</button>
+                        <button type="button" class="btn btn-primary ms-2" id="detectDisplays">Detect Displays</button>
                     </div>
                 </div>
             </div>

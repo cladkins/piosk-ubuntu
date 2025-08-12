@@ -9,22 +9,35 @@
     <title>PiOSK</title>
   </head>
   <body>
-    <nav id="navs" class="navbar bg-body-tertiary">
+    <nav class="navbar bg-body-tertiary">
       <div class="container-md d-flex justify-content-between">
-        <h1 class="my-1">Pi<span class="bg-danger mx-1 px-1 rounded">OSK</span> Ubuntu</h1>
-        <div class="input-group w-75">
-          <input  id="new-url" type="text"   class="form-control form-control-lg" placeholder="...add URLs of webpages as screens">
-          <button id="add-url" type="button" class="btn btn-secondary">ADD</button>
-          <button id="execute" type="button" class="btn btn-danger">APPLY <span class="align-text-bottom">⏻</span></button>
-          <div class="btn-group" role="group">
-            <a href="/switcher.html" class="btn btn-outline-secondary">Switcher</a>
-            <a href="/multiscreen.html" class="btn btn-outline-info">Multi-Screen</a>
-          </div>
+        <h1 class="my-1">Pi<span class="bg-danger mx-1 px-1 rounded">OSK</span> Dashboard</h1>
+        <div>
+          <a href="/switcher.html" class="btn btn-outline-secondary">Switcher</a>
+          <a href="/multiscreen.html" class="btn btn-outline-info ms-2">Multi-Screen</a>
         </div>
       </div>
     </nav>
 
-    <div class="container-md my-4">
+    <div class="container-md my-5">
+      <!-- URL Management -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">URL Management</h5>
+            </div>
+            <div class="card-body">
+              <div class="input-group mb-3">
+                <input id="new-url" type="text" class="form-control form-control-lg" placeholder="...add URLs of webpages as screens">
+                <button id="add-url" type="button" class="btn btn-secondary">ADD</button>
+                <button id="execute" type="button" class="btn btn-danger">APPLY <span class="align-text-bottom">⏻</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Mode Control -->
       <div class="row mb-4">
         <div class="col-12">
@@ -37,16 +50,30 @@
                 <button type="button" class="btn btn-success" id="start-single">Start Single-Screen</button>
                 <button type="button" class="btn btn-danger" id="stop-single">Stop Kiosk</button>
               </div>
-              <span class="text-muted">Configure URLs below, then start kiosk mode</span>
+              <span class="text-muted">Configure URLs above, then start kiosk mode</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Current URLs -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Current URLs</h5>
+            </div>
+            <div class="card-body">
+              <div id="urls">
+                <ul class="list-group list-group-flush"></ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="urls" class="container-md">
-      <ul class="list-group list-group-flush"></ul>
-    </div>
+    <!-- Alert Container -->
+    <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
 
     <template id="template-url">
       <li class="list-group-item text-truncate fs-3">

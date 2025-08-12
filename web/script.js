@@ -18,10 +18,28 @@ let piosk = {
     })
   },
   showStatus (xhr) {
-    let tmpErr = $('#template-err').contents().clone()
-    tmpErr.html(xhr.responseText)
-    $('#urls').append(tmpErr)
-    setTimeout(_ => { $('.alert-danger').remove() }, 5000)
+    let message = xhr.responseText || xhr.message || 'Action completed';
+    let type = xhr.status && xhr.status >= 400 ? 'danger' : 'success';
+    piosk.showAlert(message, type);
+  },
+  
+  showAlert(message, type) {
+    const container = document.getElementById('alert-container');
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    container.appendChild(alert);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      if (alert.parentNode) {
+        alert.remove();
+      }
+    }, 5000);
   }
 }
 
