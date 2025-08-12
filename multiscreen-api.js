@@ -137,24 +137,29 @@ function addMultiScreenRoutes(app) {
         
         // First stop single-screen mode and switcher to avoid conflicts
         exec('pkill -f "chromium.*remote-debugging-port" && systemctl --user stop piosk-switcher 2>/dev/null || true', (error1) => {
-            console.log(`${new Date().toISOString()}: Cleanup completed, starting multi-screen script`);
+            console.log(`${new Date().toISOString()}: Cleanup completed, waiting for processes to fully terminate`);
             
-            // Now start multi-screen mode
-            exec(scriptPath, (error, stdout, stderr) => {
-                console.log(`${new Date().toISOString()}: Multi-screen script execution completed`);
-                console.log(`${new Date().toISOString()}: Error:`, error);
-                console.log(`${new Date().toISOString()}: Stdout:`, stdout);
-                console.log(`${new Date().toISOString()}: Stderr:`, stderr);
+            // Wait for processes to fully terminate before starting multiscreen
+            setTimeout(() => {
+                console.log(`${new Date().toISOString()}: Wait completed, starting multi-screen script`);
                 
-                if (error) {
-                    const errorDetails = `Error: ${error.message}, Stdout: ${stdout}, Stderr: ${stderr}`;
-                    console.log(`${new Date().toISOString()}: Multi-screen start failed: ${errorDetails}`);
-                    res.status(500).json({ error: 'Failed to start multi-screen mode', details: errorDetails });
-                } else {
-                    console.log(`${new Date().toISOString()}: Multi-screen mode started successfully`);
-                    res.json({ message: 'Multi-screen mode started successfully' });
-                }
-            });
+                // Now start multi-screen mode
+                exec(scriptPath, (error, stdout, stderr) => {
+                    console.log(`${new Date().toISOString()}: Multi-screen script execution completed`);
+                    console.log(`${new Date().toISOString()}: Error:`, error);
+                    console.log(`${new Date().toISOString()}: Stdout:`, stdout);
+                    console.log(`${new Date().toISOString()}: Stderr:`, stderr);
+                    
+                    if (error) {
+                        const errorDetails = `Error: ${error.message}, Stdout: ${stdout}, Stderr: ${stderr}`;
+                        console.log(`${new Date().toISOString()}: Multi-screen start failed: ${errorDetails}`);
+                        res.status(500).json({ error: 'Failed to start multi-screen mode', details: errorDetails });
+                    } else {
+                        console.log(`${new Date().toISOString()}: Multi-screen mode started successfully`);
+                        res.json({ message: 'Multi-screen mode started successfully' });
+                    }
+                });
+            }, 5000); // 5 second wait
         });
     });
 

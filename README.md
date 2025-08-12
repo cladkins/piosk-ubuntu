@@ -19,9 +19,11 @@ This is an **Ubuntu adaptation** of the original [PiOSK project](https://github.
 - **Automatic Setup**: Single script installation for Ubuntu
 - **Web Dashboard**: Manage URLs through a web interface
 - **Multi-Screen Support**: Run separate browsers on multiple displays with different content
+- **Mode Persistence**: Automatically remembers and restores single-screen or multi-screen mode after reboot
 - **Auto-login**: Configures automatic login for your display manager
 - **Tab Rotation**: Automatically cycles through configured web pages
 - **Switcher Control**: Web interface to control tab switching timing and enable/disable with immediate effect
+- **Fullscreen Reliability**: Robust fullscreen mode with timing optimizations for consistent display
 - **Systemd Integration**: Runs as system services for reliability
 - **Multiple Display Manager Support**: Works with GDM3, LightDM, and SDDM
 - **Nginx Reverse Proxy**: Secure web interface on port 80
@@ -150,11 +152,13 @@ The setup script automatically detects and configures your display manager:
 ## How It Works
 
 1. **Autologin**: The system automatically logs in to the desktop on boot
-2. **Autostart**: The kiosk application starts automatically when the desktop loads
-3. **Web Dashboard**: Nginx serves the management interface on port 80
-4. **Tab Rotation**: Chromium cycles through configured URLs in kiosk mode
-5. **Configuration**: Changes made through the web interface are saved and applied on reboot
-6. **Power Management**: Screen saver, auto logout, and power management are automatically disabled
+2. **Smart Startup**: The `runner-smart.sh` script detects the last used mode and starts either single-screen or multi-screen mode
+3. **Autostart**: The kiosk application starts automatically when the desktop loads
+4. **Web Dashboard**: Nginx serves the management interface on port 80
+5. **Tab Rotation**: Chromium cycles through configured URLs in kiosk mode
+6. **Configuration**: Changes made through the web interface are saved and applied immediately
+7. **Mode Persistence**: The system remembers which mode was active and restores it after reboot
+8. **Power Management**: Screen saver, auto logout, and power management are automatically disabled
 
 ## Power Management
 
@@ -212,6 +216,8 @@ PiOSK now supports multiple displays, allowing you to run separate browsers on e
 2. **Configure Screens**: Set different URLs for each detected display
 3. **Start Multi-Screen**: Click "Start Multi-Screen" to launch all screens simultaneously
 
+**Note**: When switching from single-screen to multi-screen mode, there's an automatic 5-second wait after stopping existing processes to ensure proper cleanup before starting new browsers. This prevents timing conflicts and ensures all screens launch properly in fullscreen mode.
+
 #### Individual Screen Management
 - **Configure**: Enter URLs for each screen (one per line in the text area)
 - **Save**: Save configuration for specific screens
@@ -249,6 +255,22 @@ Example screen configuration:
 - **Single-Screen Mode**: Use the original dashboard and runner
 - **Multi-Screen Mode**: Use the multi-screen interface and runner
 - Both modes can coexist and be switched between as needed
+
+### Mode Persistence Through Reboot
+PiOSK automatically remembers which mode (single-screen or multi-screen) was last active and restores it after system reboot:
+
+- **Automatic Detection**: The system detects which mode was running before reboot
+- **Smart Startup**: Uses `runner-smart.sh` to start the correct mode on boot
+- **State Storage**: Last mode is saved to `last-mode.txt` when starting any mode
+- **Fallback**: Defaults to single-screen mode if no previous state is found
+
+#### How It Works
+1. When you start **single-screen mode**: Saves "single-screen" to state file
+2. When you start **multi-screen mode**: Saves "multi-screen" to state file  
+3. On system **reboot/login**: `runner-smart.sh` reads the state file and starts the correct mode
+4. **No manual intervention needed**: The system automatically restarts in the same mode you were using
+
+This ensures your kiosk display configuration persists through power cycles and system restarts without requiring manual reconfiguration.
 
 ## Switcher Control
 
@@ -312,6 +334,8 @@ Switcher settings are stored in `config.json`:
 12. **Dashboard service won't start**: Try running manually in project directory: `npm start`
 13. **Switcher not working**: Check if the switcher service is running: `sudo systemctl status piosk-switcher`
 14. **Tabs not switching**: Verify Chromium is running and switcher service is active
+15. **Wrong mode starts after reboot**: Check the persistence state file: `cat /opt/piosk/last-mode.txt`
+16. **Mode persistence not working**: Verify `runner-smart.sh` is being used in autostart instead of `runner.sh`
 
 ### Error Logs
 
@@ -382,6 +406,21 @@ If the switcher controls aren't working in the dashboard:
    - Use the web interface to toggle the "Enable Switcher" checkbox
    - Click "Apply Settings"
    - The service should automatically start
+
+### Mode Status Checking
+
+Check the current mode status and persistence state:
+
+```bash
+# Check current mode status via API
+curl http://localhost:3000/mode/status
+
+# Check persistence state file directly  
+cat /opt/piosk/last-mode.txt
+
+# Check which runner script is being used in autostart
+cat ~/.config/autostart/piosk-kiosk.desktop | grep Exec
+```
 
 ### Manual Display Manager Configuration
 
